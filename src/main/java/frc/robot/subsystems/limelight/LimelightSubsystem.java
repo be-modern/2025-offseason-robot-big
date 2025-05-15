@@ -55,7 +55,9 @@ public class LimelightSubsystem extends SubsystemBase {
     public PoseEstimate[] getLastPoseEstimates() {
         List<PoseEstimate> poseEstimates = new ArrayList<>();
         limelightInputs.forEach((key, input) -> {
-            poseEstimates.add(input.poseBlue);
+            if (input != null && input.poseBlue != null) {
+                poseEstimates.add(input.poseBlue);
+            }
         });
         return poseEstimates.toArray(new PoseEstimate[0]);
     }
@@ -68,30 +70,42 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     public Optional<PoseEstimate[]> determinePoseEstimate(AngularVelocity gyroRate) {
-        limelightIOs.forEach((key, io) -> io.setNewEstimate(limelightInputs.get(key), !rejectUpdate(limelightInputs.get(key).poseBlue, gyroRate)));
+        limelightIOs.forEach((key, io) -> {
+            LimelightIOInputsAutoLogged input = limelightInputs.get(key);
+            if (input != null) {
+                io.setNewEstimate(input, !rejectUpdate(input.poseBlue, gyroRate));
+            }
+        });
 
-        boolean newRightEstimate = limelightInputs.get(LIMELIGHT_RIGHT).newEstimate;
-        boolean newLeftEstimate = limelightInputs.get(LIMELIGHT_LEFT).newEstimate;
-        PoseEstimate lastEstimateRight = limelightInputs.get(LIMELIGHT_RIGHT).poseBlue;
-        PoseEstimate lastEstimateLeft = limelightInputs.get(LIMELIGHT_LEFT).poseBlue;
+        LimelightIOInputsAutoLogged rightInputs = limelightInputs.get(LIMELIGHT_RIGHT);
+        LimelightIOInputsAutoLogged leftInputs = limelightInputs.get(LIMELIGHT_LEFT);
+
+        if (rightInputs == null || leftInputs == null) {
+            return Optional.empty();
+        }
+
+        boolean newRightEstimate = rightInputs.newEstimate;
+        boolean newLeftEstimate = leftInputs.newEstimate;
+        PoseEstimate lastEstimateRight = rightInputs.poseBlue;
+        PoseEstimate lastEstimateLeft = leftInputs.poseBlue;
         // No valid pose estimates :(
         if (!newRightEstimate && !newLeftEstimate) {
             return Optional.empty();
 
         } else if (newRightEstimate && !newLeftEstimate) {
             // One valid pose estimate (right)
-            limelightIOs.get(LIMELIGHT_RIGHT).setNewEstimate(limelightInputs.get(LIMELIGHT_RIGHT), false);
+            limelightIOs.get(LIMELIGHT_RIGHT).setNewEstimate(rightInputs, false);
             return Optional.of(new PoseEstimate[]{lastEstimateRight, null});
 
         } else if (!newRightEstimate) {
             // One valid pose estimate (left)
-            limelightIOs.get(LIMELIGHT_LEFT).setNewEstimate(limelightInputs.get(LIMELIGHT_LEFT), false);
+            limelightIOs.get(LIMELIGHT_LEFT).setNewEstimate(leftInputs, false);
             return Optional.of(new PoseEstimate[]{lastEstimateLeft, null});
 
         } else {
             // Two valid pose estimates, disgard the one that's further
-            limelightIOs.get(LIMELIGHT_RIGHT).setNewEstimate(limelightInputs.get(LIMELIGHT_RIGHT), false);
-            limelightIOs.get(LIMELIGHT_LEFT).setNewEstimate(limelightInputs.get(LIMELIGHT_LEFT), false);
+            limelightIOs.get(LIMELIGHT_RIGHT).setNewEstimate(rightInputs, false);
+            limelightIOs.get(LIMELIGHT_LEFT).setNewEstimate(leftInputs, false);
             return Optional.of(new PoseEstimate[]{lastEstimateRight, lastEstimateLeft});
         }
     }
@@ -104,8 +118,11 @@ public class LimelightSubsystem extends SubsystemBase {
         AngularVelocity gyroRate = Units.DegreesPerSecond.of(swerveLocalizer.getSmoothedVelocity().getRotation().getDegrees());
 
         limelightIOs.forEach((name, io) -> {
-            io.updateInputs(limelightInputs.get(name), gyroRate);
-            Logger.processInputs(name, limelightInputs.get(name));
+            LimelightIOInputsAutoLogged input = limelightInputs.get(name);
+            if (input != null) {
+                io.updateInputs(input, gyroRate);
+                Logger.processInputs(name, input);
+            }
         });
 
         Optional<PoseEstimate[]> estimatedPose = determinePoseEstimate(gyroRate);
