@@ -14,6 +14,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 public class Superstructure extends SubsystemBase {
     private final ElevatorSubsystem elevator;
@@ -86,6 +87,21 @@ public class Superstructure extends SubsystemBase {
             Logger.recordOutput("Superstructure/EdgeCommand", "");
         }
     }
+
+    @AutoLogOutput(key = "Superstructure/AtGoal")
+    public boolean atGoal() {
+      return state == goal;
+    }
+  
+    
+    public Command runGoal(SuperstructureState goal) {
+        return runOnce(() -> setGoal(goal)).andThen(Commands.idle(this));
+    }
+
+    public Command runGoal(Supplier<SuperstructureState> goal) {
+        return run(() -> setGoal(goal.get()));
+    }
+
 
     public void setGoal(SuperstructureState goal) {
         // Don't do anything if goal is the same
