@@ -9,6 +9,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.swerve.Swerve;
+import frc.robot.utils.LoggedTracer;
+
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -60,6 +62,7 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotPeriodic() {
+        LoggedTracer.reset();
         CommandScheduler.getInstance().run();
         robotContainer.getUpdateManager().runEnableSingle();
     }

@@ -266,30 +266,6 @@ public class DestinationSupplier implements Updatable {
         }
     }
 
-    /**
-     * Gets the current elevator setpoint value in meters
-     *
-     * @param useCoral Whether to use coral scoring position (true) or poke position (false)
-     * @return The elevator extension distance in meters
-     */
-    public double getElevatorSetpoint(boolean useCoral) {
-        this.useCoral = useCoral;
-        if (useCoral) {
-            return switch (currentElevSetpointCoral) {
-                case L1 -> RobotConstants.ElevatorConstants.L1_EXTENSION_METERS.get();
-                case L2 -> RobotConstants.ElevatorConstants.L2_EXTENSION_METERS.get();
-                case L3 -> RobotConstants.ElevatorConstants.L3_EXTENSION_METERS.get();
-                case L4 -> RobotConstants.ElevatorConstants.L4_EXTENSION_METERS.get();
-                default -> RobotConstants.ElevatorConstants.L2_EXTENSION_METERS.get();
-            };
-        } else {
-            return switch (currentElevSetpointAlgae) {
-                case P1 -> RobotConstants.ElevatorConstants.P1_EXTENSION_METERS.get();
-                case P2 -> RobotConstants.ElevatorConstants.P2_EXTENSION_METERS.get();
-                default -> RobotConstants.ElevatorConstants.P1_EXTENSION_METERS.get();
-            };
-        }
-    }
 
     /**
      * Updates which reef branch to target

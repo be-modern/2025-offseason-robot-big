@@ -22,8 +22,8 @@ import frc.robot.RobotContainer;
 import frc.robot.subsystems.beambreak.BeambreakIO;
 import frc.robot.subsystems.beambreak.BeambreakIOInputsAutoLogged;
 import frc.robot.subsystems.superstructure.endeffectorarm.EndEffectorArmPivotIOInputsAutoLogged;
+import frc.robot.subsystems.roller.RollerIO;    
 import frc.robot.subsystems.roller.RollerIOInputsAutoLogged;
-import frc.robot.subsystems.roller.RollerIO;
 import frc.robot.subsystems.superstructure.DestinationSupplier;
 import frc.robot.subsystems.superstructure.GamepieceTracker;
 import frc.robot.subsystems.superstructure.SuperstructureVisualizer;
@@ -42,7 +42,7 @@ public class EndEffectorArmSubsystem extends SubsystemBase {
     public static final String NAME = "EndEffectorArm";
     // IO devices and their inputs
     private final EndEffectorArmPivotIO armPivotIO;
-    private final EndEffectorArmPivotIOInputsAutoLogged armPivotIOInputs = new EndEffectorArmPivotIOInputsAutoLogged();
+    private final EndEffectorArmPivotIOInputsAutoLogged	 armPivotIOInputs = new EndEffectorArmPivotIOInputsAutoLogged();
     private final RollerIOInputsAutoLogged armRollerIOInputs = new RollerIOInputsAutoLogged();
 
     // Beambreak sensors for coral and algae detection

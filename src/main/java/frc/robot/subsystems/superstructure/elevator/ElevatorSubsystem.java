@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.superstructure.SuperstructurePose;
 import frc.robot.subsystems.superstructure.elevator.ElevatorIOInputsAutoLogged;
 import lombok.Getter;
 
@@ -27,7 +28,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     public boolean zeroing = false;
     @Getter
     @AutoLogOutput(key = "Elevator/setPoint")
-    private double wantedPosition = ElevatorConstants.HOLD_EXTENSION_METERS.get();
+    private double wantedPosition = 0.16;
     @Getter
     @AutoLogOutput(key = "Elevator/atGoal")
     private boolean atGoal = false;
