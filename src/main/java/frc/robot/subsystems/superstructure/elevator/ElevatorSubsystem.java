@@ -32,6 +32,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     @Getter
     @AutoLogOutput(key = "Elevator/atGoal")
     private boolean atGoal = false;
+    @AutoLogOutput(key = "Elevator/stopProfile")
     private boolean stopProfile = false;
 
     public ElevatorSubsystem(ElevatorIO io) {
@@ -44,17 +45,15 @@ public class ElevatorSubsystem extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Elevator", inputs);
         final boolean runningGoal = 
-            !stopProfile &&
-            !zeroing;
+            !stopProfile;
         if (runningGoal) {
             atGoal = elevatorAtGoal(ElevatorConstants.ELEVATOR_GOAL_TOLERANCE.get());
             io.setElevatorTarget(wantedPosition);
         }else{
-            wantedPosition = 0;
+            atGoal = false;
         }
         LoggedTracer.record("Elevator");
     }
-
 
     public double getElevatorPosition() {
         return inputs.positionMeters;
@@ -87,12 +86,15 @@ public class ElevatorSubsystem extends SubsystemBase {
                     }
                 } else {
                     io.setElevatorTarget(0);
-                    zeroing = false;
+                    if (Math.abs(inputs.positionMeters) < 0.01) {
+                        zeroing = false;
+                    }
                 }
             })
             .until(() -> !zeroing)
             .finallyDo(() -> {
                 stopProfile = false;
+                zeroing = false;
             });
     }
 

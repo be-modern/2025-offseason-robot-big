@@ -258,7 +258,9 @@ public class Superstructure extends SubsystemBase {
     }
 
     public Command runZero(){
-        return elevator.zeroElevator();
+        return runGoal(() -> SuperstructureState.IDLE)
+            .until(this::poseAtGoal)
+            .andThen(elevator.zeroElevator());
     }
 
     public void setGoal(SuperstructureState goal) {

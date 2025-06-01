@@ -320,10 +320,9 @@ public class RobotContainer {
     public void configureTesterBindings() {
         testerController
             .a()
-            .whileTrue(
+            .toggleOnTrue(
                 superstructure
-                    .runGoal(() -> SuperstructureState.CORAL_GROUND_INTAKE)
-                    .until(superstructure::hasCoral)
+                    .runZero()
             );
 
         testerController
@@ -358,8 +357,7 @@ public class RobotContainer {
                             .until(() -> !superstructure.hasAlgae())
                     )
             );
-        testerController.leftBumper().onTrue(Commands.runOnce(() -> destinationSupplier.updateElevatorSetpoint(DestinationSupplier.elevatorSetpoint.P1)));
-        testerController.rightBumper().onTrue(Commands.runOnce(() -> destinationSupplier.updateElevatorSetpoint(DestinationSupplier.elevatorSetpoint.P2)));
+        
     }
 
     // public Command getAutonomousCommand() {
