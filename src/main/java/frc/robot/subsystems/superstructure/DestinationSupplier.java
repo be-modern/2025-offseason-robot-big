@@ -18,7 +18,9 @@ import org.littletonrobotics.junction.Logger;
 
 import java.util.List;
 
-public class DestinationSupplier {
+import static frc.robot.subsystems.superstructure.SuperstructureState.*;
+
+public class DestinationSupplier { ;
     private static DestinationSupplier instance;
     @Getter
     @Setter
@@ -36,9 +38,9 @@ public class DestinationSupplier {
     private boolean coralRight = false;
     private boolean useCoral = false;
     @Getter
-    private elevatorSetpoint currentElevSetpointCoral = elevatorSetpoint.L2;
+    private SuperstructureState currentElevSetpointCoral = L2;
     @Getter
-    private elevatorSetpoint currentElevSetpointAlgae = elevatorSetpoint.P1;
+    private SuperstructureState currentElevSetpointAlgae = P1;
     @Getter
     private AlgaeScoringMode algaeScoringMode = AlgaeScoringMode.NET;
     @Getter
@@ -248,9 +250,9 @@ public class DestinationSupplier {
      *
      * @param setpoint The desired elevator setpoint (L1-L4 for coral, P1-P2 for poke)
      */
-    public void updateElevatorSetpoint(elevatorSetpoint setpoint) {
+    public void updateElevatorSetpoint(SuperstructureState setpoint) {
         switch (setpoint) {
-            case L1, L2, L3, L4:
+            case L1_INTAKE_SIDE, L2, L3, L4:
                 currentElevSetpointCoral = setpoint;
                 Logger.recordOutput("DestinationSupplier/currentElevSetpointCoral", setpoint);
                 SmartDashboard.putString("DestinationSupplier/currentElevSetpointCoral", setpoint.toString());
@@ -329,10 +331,10 @@ public class DestinationSupplier {
     public void updatePokeSetpointByTag(int tagNumber) {
         switch (tagNumber) {
             case 6, 8, 10, 17, 19, 21:
-                updateElevatorSetpoint(elevatorSetpoint.P1);
+                updateElevatorSetpoint(SuperstructureState.P1);
                 break;
             case 7, 9, 11, 18, 20, 22:
-                updateElevatorSetpoint(elevatorSetpoint.P2);
+                updateElevatorSetpoint(SuperstructureState.P2);
                 break;
             default:
                 System.out.println("Tag number does not correspond to a valid elevator setpoint.");
@@ -359,6 +361,17 @@ public class DestinationSupplier {
         SmartDashboard.putBoolean("DestinationSupplier/UseSuperCycle", useSuperCycle);
     }
 
+    public SuperstructureState ejectStateTransition () {
+        return switch (currentElevSetpointAlgae) {
+            case L1_SHOOT_SIDE -> L1_SHOOT_SIDE_EJECT;
+            case L1_INTAKE_SIDE -> L1_INTAKE_SIDE_EJECT;
+            case L2 -> L2_EJECT;
+            case L3 -> L3_EJECT;
+            case L4 -> L4_EJECT;
+            case NET_SCORE -> NET_SCORE_EJECT;
+            default -> throw new IllegalStateException("Unexpected value: " + currentElevSetpointAlgae);
+        };
+    }
 
     public enum elevatorSetpoint {
         L1, L2, L3, L4, P1, P2

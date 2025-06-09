@@ -225,19 +225,33 @@ public class Superstructure extends SubsystemBase {
             goal.getValue().getPose().intakeAngle().getAsDouble(),
             goal.getValue().getPose().endEffectorAngle().getAsDouble()
         );
+        // if we complete the current command, there are three things that we should planning to do
+        // 1. update state (to next, which is current state)
+        // 2. update next (to the next target state, which should be found through bfs)
+        // 3. update edgeCommand (the command we should process to reach next)
         if (edgeCommand == null || !edgeCommand.getCommand().isScheduled()) {
-            // Update edge to new state
+            // why we need this if statement ?
+            // from my perspective, if next is null in this case, we should abort the process
+            // this part complete 1.
             if (next != null) {
+                // change the old state to current state since we already complete the command
                 state = next;
+                // change next state to null temporarily
                 next = null;
             }
 
+            // now we should complete 2 and 3 by using bfs
             // Schedule next command in sequence
             if (state != goal) {
+                // the bfs will find the shortest path between our current state and the goal and
+                // return the first point(state) to get to the goal
                 bfs(state, goal)
                     .ifPresent(next -> {
+                        // this setup the next state
                         this.next = next;
+                        // find the edge(command) between state and next
                         edgeCommand = graph.getEdge(state, next);
+                        // schedule the command to get to the next state
                         edgeCommand.getCommand().schedule();
                     });
             }
@@ -270,7 +284,7 @@ public class Superstructure extends SubsystemBase {
     }
 
     public Command runGoal(Supplier<SuperstructureState> goal) {
-        return run(() -> setGoal(goal.get()));
+        return Commands.run(() -> setGoal(goal.get()));
     }
 
     public Command runZero(){
@@ -428,12 +442,16 @@ public class Superstructure extends SubsystemBase {
       @Builder.Default private final boolean restricted = false;
     }
 
-    public boolean hasCoral(){
+    public boolean hasCoral() {
         return endEffectorArm.isHasCoral();
     }
 
     public boolean hasAlgae(){
         return endEffectorArm.isHasAlgae();
+    }
+
+    public double getElevatorPosition() {
+        return elevator.getElevatorPosition();
     }
 
     private Command runIntake(DoubleSupplier pivotAngle) {
@@ -454,7 +472,8 @@ public class Superstructure extends SubsystemBase {
             .alongWith(runEndEffectorArm(pose.endEffectorAngle())
             .alongWith(runIntake(pose.intakeAngle())));
     }
-    private boolean poseAtGoal(){
+
+    public boolean poseAtGoal(){
         return elevator.isAtGoal() && endEffectorArm.isAtGoal() && intake.isAtGoal();
     }
     private Command runSuperstructureRollers(SuperstructureState state){
@@ -464,10 +483,10 @@ public class Superstructure extends SubsystemBase {
         });
     }
 
-    //declare all edge commands here
+    // declare all edge commands here
     private Command getEdgeCommand(SuperstructureState from, SuperstructureState to) {
-        //is safe to flip inorder to produce a smoother elevator motion
-        //TODO: Test this 
+        // is safe to flip inorder to produce a smoother elevator motion
+        // TODO: Test this
         if (to == SuperstructureState.AVOID) {
             if (statesBelowFlip.contains(from)) {
                 return runElevator(to.getValue().getPose().elevatorHeight())

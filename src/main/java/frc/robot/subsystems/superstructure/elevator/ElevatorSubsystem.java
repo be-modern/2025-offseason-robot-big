@@ -14,6 +14,8 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 import static frc.robot.RobotConstants.ElevatorConstants;
+import static frc.robot.RobotConstants.ElevatorConstants.ELEVATOR_GEAR_RATIO;
+import static frc.robot.RobotConstants.ElevatorConstants.ELEVATOR_SPOOL_DIAMETER;
 
 import java.util.function.DoubleSupplier;
 
@@ -49,7 +51,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         if (runningGoal) {
             atGoal = elevatorAtGoal(ElevatorConstants.ELEVATOR_GOAL_TOLERANCE.get());
             io.setElevatorTarget(wantedPosition);
-        }else{
+        } else {
             atGoal = false;
         }
         LoggedTracer.record("Elevator");
@@ -57,7 +59,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public double getElevatorPosition() {
         return inputs.positionMeters;
-    }   
+    }
 
     public void setElevatorPosition(DoubleSupplier position) {
         wantedPosition = position.getAsDouble();

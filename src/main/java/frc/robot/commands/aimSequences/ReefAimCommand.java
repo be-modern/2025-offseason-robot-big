@@ -12,6 +12,8 @@ import frc.robot.display.Display;
 import frc.robot.subsystems.indicator.IndicatorIO;
 import frc.robot.subsystems.indicator.IndicatorSubsystem;
 import frc.robot.subsystems.superstructure.DestinationSupplier;
+import frc.robot.subsystems.superstructure.Superstructure;
+import frc.robot.subsystems.superstructure.SuperstructureState;
 import frc.robot.subsystems.superstructure.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.swerve.Swerve;
 import org.littletonrobotics.AllianceFlipUtil;
@@ -38,7 +40,7 @@ public class ReefAimCommand extends Command {
                     ReefAimConstants.MAX_AIMING_SPEED.magnitude(),
                     ReefAimConstants.MAX_AIMING_ACCELERATION.magnitude()));
     private final BooleanSupplier stop;
-    private final ElevatorSubsystem elevatorSubsystem;
+    private final Superstructure superstructure;
     private final CommandXboxController driverController;
     private final IndicatorSubsystem indicatorSubsystem;
     private boolean rightReef; // true if shooting right reef
@@ -49,11 +51,11 @@ public class ReefAimCommand extends Command {
     private Translation2d translationalVelocity, controllerVelocity;
 
 
-    public ReefAimCommand(BooleanSupplier stop, ElevatorSubsystem elevatorSubsystem,
+    public ReefAimCommand(BooleanSupplier stop, Superstructure superstructure,
                           CommandXboxController driverController, IndicatorSubsystem indicatorSubsystem) {
         addRequirements(swerve);
         this.stop = stop;
-        this.elevatorSubsystem = elevatorSubsystem;
+        this.superstructure = superstructure;
         this.driverController = driverController;
         this.indicatorSubsystem = indicatorSubsystem;
     }
@@ -73,7 +75,7 @@ public class ReefAimCommand extends Command {
         if (DestinationSupplier.getInstance().getCurrentGamePiece() == DestinationSupplier.GamePiece.ALGAE_INTAKING) {
             finalDestinationPose = DestinationSupplier.getFinalAlgaeTarget(tagPose);
         } else {
-            if (DestinationSupplier.getInstance().getCurrentElevSetpointCoral() == DestinationSupplier.elevatorSetpoint.L1) {
+            if (DestinationSupplier.getInstance().getCurrentElevSetpointCoral() == SuperstructureState.L1_SHOOT_SIDE) {
                 finalDestinationPose = DestinationSupplier.getFinalAlgaeTarget(tagPose);
             } else {
                 rightReef = DestinationSupplier.getInstance().getCurrentBranch();
@@ -87,12 +89,12 @@ public class ReefAimCommand extends Command {
     public void execute() {
         xPID.setConstraints(
                 new TrapezoidProfile.Constraints(
-                        ReefAimConstants.MAX_AIMING_SPEED.magnitude() * 0.6 / elevatorSubsystem.getElevatorPosition(),
-                        ReefAimConstants.MAX_AIMING_ACCELERATION.magnitude() * 0.6 / elevatorSubsystem.getElevatorPosition()));
+                        ReefAimConstants.MAX_AIMING_SPEED.magnitude() * 0.6 / superstructure.getElevatorPosition(),
+                        ReefAimConstants.MAX_AIMING_ACCELERATION.magnitude() * 0.6 / superstructure.getElevatorPosition()));
         yPID.setConstraints(
                 new TrapezoidProfile.Constraints(
-                        ReefAimConstants.MAX_AIMING_SPEED.magnitude() * 0.6 / elevatorSubsystem.getElevatorPosition(),
-                        ReefAimConstants.MAX_AIMING_ACCELERATION.magnitude() * 0.6 / elevatorSubsystem.getElevatorPosition()));
+                        ReefAimConstants.MAX_AIMING_SPEED.magnitude() * 0.6 / superstructure.getElevatorPosition(),
+                        ReefAimConstants.MAX_AIMING_ACCELERATION.magnitude() * 0.6 / superstructure.getElevatorPosition()));
         if (RobotConstants.TUNING) {
             xPID.setPID(RobotConstants.SwerveConstants.AimGainsClass.AIM_KP.get(),
                     RobotConstants.SwerveConstants.AimGainsClass.AIM_KI.get(),

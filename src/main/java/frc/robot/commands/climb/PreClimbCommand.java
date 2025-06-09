@@ -18,8 +18,7 @@ public class PreClimbCommand extends Command {
     @Override
     public void initialize() {
         climberSubsystem.setWantedState(WantedState.DEPLOY);
-
-        }
+    }
 
     @Override
     public void end(boolean interrupted) {

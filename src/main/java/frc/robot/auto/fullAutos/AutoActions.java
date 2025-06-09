@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.auto.basics.FollowPath;
 import frc.robot.subsystems.indicator.IndicatorSubsystem;
 import frc.robot.subsystems.superstructure.DestinationSupplier;
+import frc.robot.subsystems.superstructure.SuperstructureState;
 import frc.robot.subsystems.superstructure.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.superstructure.endeffectorarm.EndEffectorArmSubsystem;
 import frc.robot.subsystems.superstructure.intake.IntakeSubsystem;
@@ -47,10 +48,10 @@ public class AutoActions {
     }
 
     public Command setL4() {
-        return Commands.runOnce(() -> destinationSupplier.updateElevatorSetpoint(DestinationSupplier.elevatorSetpoint.L4));
+        return Commands.runOnce(() -> destinationSupplier.updateElevatorSetpoint(SuperstructureState.L4));
     }
 
-    public Command setLevel(DestinationSupplier.elevatorSetpoint setpoint) {
+    public Command setLevel(SuperstructureState setpoint) {
         return Commands.runOnce(() -> destinationSupplier.updateElevatorSetpoint(setpoint));
     }
 }

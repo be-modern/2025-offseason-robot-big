@@ -70,5 +70,4 @@ public enum SuperstructureState {
         
         return builder.build();
     }
-
 }

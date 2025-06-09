@@ -19,6 +19,9 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.climb.ClimbCommand;
+import frc.robot.commands.climb.IdleClimbCommand;
+import frc.robot.commands.climb.PreClimbCommand;
 import frc.robot.display.Display;
 import frc.robot.subsystems.beambreak.BeambreakIO;
 import frc.robot.subsystems.beambreak.BeambreakIOReal;
@@ -270,6 +273,37 @@ public class RobotContainer {
         // driverController.povUp().whileTrue(new PreClimbCommand(climberSubsystem, elevatorSubsystem, intakeSubsystem, endEffectorArmSubsystem));
         // driverController.povLeft().whileTrue(new IdleClimbCommand(climberSubsystem, elevatorSubsystem, intakeSubsystem, endEffectorArmSubsystem));
         // driverController.y().whileTrue(new ClimbCommand(climberSubsystem, elevatorSubsystem, intakeSubsystem, endEffectorArmSubsystem));
+
+        // Climbing
+        driverController
+                .povUp()
+                .whileTrue(
+                    Commands.parallel(
+                            superstructure
+                                    .runGoal(() -> SuperstructureState.AVOID),
+                            new PreClimbCommand(climberSubsystem)
+                    )
+                );
+
+        driverController
+                .y()
+                .whileTrue(
+                        new ClimbCommand(climberSubsystem)
+                                .onlyIf(
+                                        () -> superstructure.getState() == SuperstructureState.AVOID
+                                )
+                );
+
+        driverController
+                .povLeft()
+                .whileTrue(
+                        Commands.parallel(
+                                superstructure
+                                        .runGoal(() -> SuperstructureState.AVOID),
+                                new IdleClimbCommand(climberSubsystem)
+                        )
+                );
+
 
         driverController
                 .a()
