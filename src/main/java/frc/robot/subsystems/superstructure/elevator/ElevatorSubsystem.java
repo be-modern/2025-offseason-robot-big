@@ -25,6 +25,7 @@ public class ElevatorSubsystem  {
     private final LinearFilter currentFilter = LinearFilter.movingAverage(ElevatorConstants.ELEVATOR_ZEROING_FILTER_SIZE);
     @AutoLogOutput(key = "Elevator/currentFilterValue")
     public double currentFilterValue = 0.0;
+    @Getter
     @AutoLogOutput(key = "Elevator/zeroing")
     public boolean zeroing = false;
     @Getter

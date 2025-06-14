@@ -489,6 +489,15 @@ public class Superstructure extends SubsystemBase {
 
     // declare all edge commands here
     private Command getEdgeCommand(SuperstructureState from, SuperstructureState to) {
+        if (from == SuperstructureState.START && to == SuperstructureState.IDLE) {
+            return runEndEffectorArm(to.getValue().getPose().endEffectorAngle())
+                .alongWith(runIntake(to.getValue().getPose().intakeAngle()))
+                .andThen(
+                    Commands.waitUntil(endEffectorArm::isAtGoal),
+                    elevator.zeroElevator(),
+                    Commands.waitUntil(() -> !elevator.isZeroing())
+                );
+        }
         // Special handling for coral indexing while holding algae - only move intake
         if (to == SuperstructureState.CORAL_INDEXED_INTAKE) {
             return runIntake(to.getValue().getPose().intakeAngle())
