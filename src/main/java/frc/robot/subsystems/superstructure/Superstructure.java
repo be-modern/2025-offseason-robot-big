@@ -29,9 +29,11 @@ public class Superstructure extends SubsystemBase {
 
     private final Graph<SuperstructureState, EdgeCommand> graph = new DefaultDirectedGraph<>(EdgeCommand.class);
 
-    @Getter private SuperstructureState state = SuperstructureState.START;
+    @Getter
+    private SuperstructureState state = SuperstructureState.START;
     private SuperstructureState next = null;
-    @Getter private SuperstructureState goal = SuperstructureState.START;
+    @Getter
+    private SuperstructureState goal = SuperstructureState.START;
     private EdgeCommand edgeCommand;
     private final IntakeSubsystem intake;
     private final EndEffectorArmSubsystem endEffectorArm;
@@ -43,26 +45,26 @@ public class Superstructure extends SubsystemBase {
 
     /**
      * Constructor for the Superstructure subsystem.
-     * 
+     * <p>
      * Important Implementation Requirements:
      * 1. All state transitions (edges) must be declared in the constructor using {@link #addEdge(SuperstructureState, SuperstructureState)}
      * 2. All edge commands must be implemented in {@link #getEdgeCommand(SuperstructureState, SuperstructureState)}
      * 3. All commands must properly exit and finish
-     *    This is crucial for the state machine to progress to the next state
-     * 
+     * This is crucial for the state machine to progress to the next state
+     * <p>
      * Superstructure Default Command Behavior
-     * 
+     * <p>
      * The superstructure subsystem uses a default command that continuously monitors and updates its state.
      * This command runs automatically in the background under these conditions:
      * - When the robot transitions from disabled to enabled state
      * - When no other command is actively running on the subsystem
      * - After a previously running command completes
-     * 
+     * <p>
      * Note: When {@link #runGoal(SuperstructureState)} is executed (e.g., via button bindings), it remains active even after
      * reaching the target state. This prevents the default command from taking over, which is intentional
      * to maintain the desired state until a new command is issued. I.E if the superstructure were to return
      * to the default state, {@link #runGoal(SuperstructureState)} would have to finish
-     * 
+     *
      * @see #addEdge(SuperstructureState, SuperstructureState)
      * @see #getEdgeCommand(SuperstructureState, SuperstructureState)
      * @see #setDefaultCommand(Command)
@@ -85,13 +87,13 @@ public class Superstructure extends SubsystemBase {
         addEdge(SuperstructureState.START, SuperstructureState.IDLE, false, false);
         // Add edges between shoot and preshoot states
         this.shootStates =
-        Set.of(
-            Pair.of(SuperstructureState.L1_INTAKE_SIDE, SuperstructureState.L1_INTAKE_SIDE_EJECT),
-            Pair.of(SuperstructureState.L1_SHOOT_SIDE, SuperstructureState.L1_SHOOT_SIDE_EJECT),
-            Pair.of(SuperstructureState.L2, SuperstructureState.L2_EJECT),
-            Pair.of(SuperstructureState.L3, SuperstructureState.L3_EJECT),
-            Pair.of(SuperstructureState.L4, SuperstructureState.L4_EJECT),
-            Pair.of(SuperstructureState.NET_SCORE, SuperstructureState.NET_SCORE_EJECT));
+                Set.of(
+                        Pair.of(SuperstructureState.L1_INTAKE_SIDE, SuperstructureState.L1_INTAKE_SIDE_EJECT),
+                        Pair.of(SuperstructureState.L1_SHOOT_SIDE, SuperstructureState.L1_SHOOT_SIDE_EJECT),
+                        Pair.of(SuperstructureState.L2, SuperstructureState.L2_EJECT),
+                        Pair.of(SuperstructureState.L3, SuperstructureState.L3_EJECT),
+                        Pair.of(SuperstructureState.L4, SuperstructureState.L4_EJECT),
+                        Pair.of(SuperstructureState.NET_SCORE, SuperstructureState.NET_SCORE_EJECT));
         for (var pair : shootStates) {
             addEdge(pair.getFirst(), pair.getSecond(), true, false);
         }
@@ -109,66 +111,67 @@ public class Superstructure extends SubsystemBase {
                 }
             }
         }
-        for (var from : statesBelowFlip){
-            for (var to : statesBelowFlip){
+        for (var from : statesBelowFlip) {
+            for (var to : statesBelowFlip) {
                 if (from != to) {
                     addEdge(from, to, false);
                 }
             }
         }
-        for (var from : statesBelowFlip){
-            for (var to : statesAboveFlip){
+        for (var from : statesBelowFlip) {
+            for (var to : statesAboveFlip) {
                 if (from != to) {
                     addEdge(from, to, true, false);
                 }
             }
         }
-        for (var from : statesAboveFlip){
+        for (var from : statesAboveFlip) {
             addEdge(from, SuperstructureState.AVOID, true, false);
         }
         for (var from : statesBelowFlip) {
             addEdge(from, SuperstructureState.AVOID, true, false);
         }
-        for (var from : statesBelowNoFlip){
+        for (var from : statesBelowNoFlip) {
             addEdge(from, SuperstructureState.AVOID, true, false);
         }
 
 
         setDefaultCommand(
-            runGoal(() -> {
-                if (endEffectorArm.isHasCoral()) {
-                    return SuperstructureState.CORAL_STOW;
-                } else if (endEffectorArm.isHasAlgae()) {
-                    return SuperstructureState.ALGAE_STOW;
-                } else if (intake.isIndexRollerHasCoral()) {
-                    return SuperstructureState.CORAL_GROUND_INTAKE;
-                } else {
-                    return SuperstructureState.IDLE;
-                }
-            })
+                runGoal(() -> {
+                    if (endEffectorArm.isHasCoral()) {
+                        return SuperstructureState.CORAL_STOW;
+                    } else if (endEffectorArm.isHasAlgae()) {
+                        return SuperstructureState.ALGAE_STOW;
+                    } else if (intake.isIndexRollerHasCoral()) {
+                        return SuperstructureState.CORAL_GROUND_INTAKE;
+                    } else {
+                        return SuperstructureState.IDLE;
+                    }
+                })
         );
     }
+
     final Set<SuperstructureState> statesBelowNoFlip =
-        Set.of(
-            SuperstructureState.CORAL_GROUND_INTAKE,
-            SuperstructureState.L1_INTAKE_SIDE,
-            SuperstructureState.IDLE
+            Set.of(
+                    SuperstructureState.CORAL_GROUND_INTAKE,
+                    SuperstructureState.L1_INTAKE_SIDE,
+                    SuperstructureState.IDLE
             );
     final Set<SuperstructureState> statesAboveFlip =
-        Set.of(
-            SuperstructureState.CORAL_STOW,
-            SuperstructureState.ALGAE_STOW,
-            SuperstructureState.CORAL_INDEXED_INTAKE,
-            SuperstructureState.L3,
-            SuperstructureState.L4,
-            SuperstructureState.P2,
-            SuperstructureState.NET_SCORE
+            Set.of(
+                    SuperstructureState.CORAL_STOW,
+                    SuperstructureState.ALGAE_STOW,
+                    SuperstructureState.CORAL_INDEXED_INTAKE,
+                    SuperstructureState.L3,
+                    SuperstructureState.L4,
+                    SuperstructureState.P2,
+                    SuperstructureState.NET_SCORE
             );
     final Set<SuperstructureState> statesBelowFlip =
-        Set.of(
-            SuperstructureState.L1_SHOOT_SIDE,
-            SuperstructureState.L2,
-            SuperstructureState.P1
+            Set.of(
+                    SuperstructureState.L1_SHOOT_SIDE,
+                    SuperstructureState.L2,
+                    SuperstructureState.P1
             );
 
 
@@ -181,48 +184,48 @@ public class Superstructure extends SubsystemBase {
 
         //simulated gamepiece tracking
         if (!RobotBase.isReal() && !RobotConstants.useReplay) {
-            if (atGoal()&&state == SuperstructureState.CORAL_GROUND_INTAKE){
+            if (atGoal() && state == SuperstructureState.CORAL_GROUND_INTAKE) {
                 intake.setIndexRollerHasCoral(false);
                 endEffectorArm.setHasCoral(true);
             }
-            if (atGoal()&&state == SuperstructureState.CORAL_INDEXED_INTAKE){
+            if (atGoal() && state == SuperstructureState.CORAL_INDEXED_INTAKE) {
                 intake.setIndexRollerHasCoral(true);
                 // Keep algae state unchanged since we're just indexing coral
             }
-            for (var pair : shootStates){
-                if (atGoal()&&state == pair.getSecond()){
+            for (var pair : shootStates) {
+                if (atGoal() && state == pair.getSecond()) {
                     endEffectorArm.setHasCoral(false);
                 }
             }
-            if (atGoal()&&(state == SuperstructureState.P1 || state == SuperstructureState.P2)){
+            if (atGoal() && (state == SuperstructureState.P1 || state == SuperstructureState.P2)) {
                 endEffectorArm.setHasAlgae(true);
             }
-            if (atGoal()&&state == SuperstructureState.NET_SCORE_EJECT){
+            if (atGoal() && state == SuperstructureState.NET_SCORE_EJECT) {
                 endEffectorArm.setHasAlgae(false);
             }
         }
 
         //log the gamepiece tracking
         measuredPoseVisualizer.logCoralPose3D(
-            intake.isIndexRollerHasCoral(),
-            endEffectorArm.isHasCoral(),
-            endEffectorArm.isHasAlgae()
+                intake.isIndexRollerHasCoral(),
+                endEffectorArm.isHasCoral(),
+                endEffectorArm.isHasAlgae()
         );
 
         measuredPoseVisualizer.update(
-            elevator.getElevatorPosition(),
-            intake.getCurrentAngle(), 
-            endEffectorArm.getCurrentAngle()
+                elevator.getElevatorPosition(),
+                intake.getCurrentAngle(),
+                endEffectorArm.getCurrentAngle()
         );
         setpointPoseVisualizer.update(
-            elevator.getWantedPosition(),
-            intake.getWantedAngle(), 
-            endEffectorArm.getWantedAngle()
+                elevator.getWantedPosition(),
+                intake.getWantedAngle(),
+                endEffectorArm.getWantedAngle()
         );
         goalPoseVisualizer.update(
-            goal.getValue().getPose().elevatorHeight().getAsDouble(),
-            goal.getValue().getPose().intakeAngle().getAsDouble(),
-            goal.getValue().getPose().endEffectorAngle().getAsDouble()
+                goal.getValue().getPose().elevatorHeight().getAsDouble(),
+                goal.getValue().getPose().intakeAngle().getAsDouble(),
+                goal.getValue().getPose().endEffectorAngle().getAsDouble()
         );
         // if we complete the current command, there are three things that we should planning to do
         // 1. update state (to next, which is current state)
@@ -245,14 +248,14 @@ public class Superstructure extends SubsystemBase {
                 // the bfs will find the shortest path between our current state and the goal and
                 // return the first point(state) to get to the goal
                 bfs(state, goal)
-                    .ifPresent(next -> {
-                        // this setup the next state
-                        this.next = next;
-                        // find the edge(command) between state and next
-                        edgeCommand = graph.getEdge(state, next);
-                        // schedule the command to get to the next state
-                        edgeCommand.getCommand().schedule();
-                    });
+                        .ifPresent(next -> {
+                            // this setup the next state
+                            this.next = next;
+                            // find the edge(command) between state and next
+                            edgeCommand = graph.getEdge(state, next);
+                            // schedule the command to get to the next state
+                            edgeCommand.getCommand().schedule();
+                        });
             }
         }
 
@@ -262,8 +265,8 @@ public class Superstructure extends SubsystemBase {
         Logger.recordOutput("Superstructure/Goal", goal);
         if (edgeCommand != null) {
             Logger.recordOutput(
-                "Superstructure/EdgeCommand",
-                graph.getEdgeSource(edgeCommand) + " --> " + graph.getEdgeTarget(edgeCommand));
+                    "Superstructure/EdgeCommand",
+                    graph.getEdgeSource(edgeCommand) + " --> " + graph.getEdgeTarget(edgeCommand));
         } else {
             Logger.recordOutput("Superstructure/EdgeCommand", "");
         }
@@ -274,10 +277,10 @@ public class Superstructure extends SubsystemBase {
 
     @AutoLogOutput(key = "Superstructure/AtGoal")
     public boolean atGoal() {
-      return state == goal;
+        return state == goal;
     }
-  
-    
+
+
     public Command runGoal(SuperstructureState goal) {
         return runOnce(() -> setGoal(goal)).andThen(Commands.idle(this));
     }
@@ -286,10 +289,10 @@ public class Superstructure extends SubsystemBase {
         return run(() -> setGoal(goal.get()));
     }
 
-    public Command runZero(){
+    public Command runZero() {
         return runGoal(() -> SuperstructureState.IDLE)
-            .until(this::poseAtGoal)
-            .andThen(elevator.zeroElevator());
+                .until(this::poseAtGoal)
+                .andThen(elevator.zeroElevator());
     }
 
     public void setGoal(SuperstructureState goal) {
@@ -302,32 +305,32 @@ public class Superstructure extends SubsystemBase {
         var edgeToCurrentState = graph.getEdge(next, state);
         // Figure out if we should schedule a different command to get to goal faster
         if (edgeCommand.getCommand().isScheduled()
-            && edgeToCurrentState != null
-            && isEdgeAllowed(edgeToCurrentState, goal)) {
+                && edgeToCurrentState != null
+                && isEdgeAllowed(edgeToCurrentState, goal)) {
             // Figure out where we would have gone from the previous state
             bfs(state, goal)
-                .ifPresent(newNext -> {
-                    if (newNext == next) {
-                        // We are already on track
-                        return;
-                    }
+                    .ifPresent(newNext -> {
+                        if (newNext == next) {
+                            // We are already on track
+                            return;
+                        }
 
-                    if (newNext != state && graph.getEdge(next, newNext) != null) {
-                        // We can skip directly to the newNext edge
-                        edgeCommand.getCommand().cancel();
-                        edgeCommand = graph.getEdge(state, newNext);
-                        edgeCommand.getCommand().schedule();
-                        next = newNext;
-                    } else {
-                        // Follow the reverse edge from next back to the current edge
-                        edgeCommand.getCommand().cancel();
-                        edgeCommand = graph.getEdge(next, state);
-                        edgeCommand.getCommand().schedule();
-                        var temp = state;
-                        state = next;
-                        next = temp;
-                    }
-                });
+                        if (newNext != state && graph.getEdge(next, newNext) != null) {
+                            // We can skip directly to the newNext edge
+                            edgeCommand.getCommand().cancel();
+                            edgeCommand = graph.getEdge(state, newNext);
+                            edgeCommand.getCommand().schedule();
+                            next = newNext;
+                        } else {
+                            // Follow the reverse edge from next back to the current edge
+                            edgeCommand.getCommand().cancel();
+                            edgeCommand = graph.getEdge(next, state);
+                            edgeCommand.getCommand().schedule();
+                            var temp = state;
+                            state = next;
+                            next = temp;
+                        }
+                    });
         }
     }
 
@@ -377,45 +380,47 @@ public class Superstructure extends SubsystemBase {
     }
 
     private boolean isEdgeAllowed(EdgeCommand edge, SuperstructureState goal) {
-        return !edge.isRestricted() || goal == graph.getEdgeTarget(edge); 
+        return !edge.isRestricted() || goal == graph.getEdgeTarget(edge);
     }
 
     /**
      * Adds an edge between two states in the superstructure state machine.
-     * @param from The source state
-     * @param to The target state
-     * @param reverse If true, also adds a reverse edge from 'to' to 'from'
+     *
+     * @param from       The source state
+     * @param to         The target state
+     * @param reverse    If true, also adds a reverse edge from 'to' to 'from'
      * @param restricted If true, this edge can only be used when transitioning directly to its target state(z.b from L4 to L4shoot))
      * @see #isEdgeAllowed(EdgeCommand, SuperstructureState) Implementation of restricted edge behavior
      * @see #bfs(SuperstructureState, SuperstructureState) Path finding that respects restricted edges
      */
     private void addEdge(
-        SuperstructureState from,
-        SuperstructureState to,
-        boolean reverse,
-        boolean restricted) {
-      graph.addEdge(
-          from,
-          to,
-          EdgeCommand.builder()
-              .command(getEdgeCommand(from, to))
-              .restricted(restricted)
-              .build());
-      if (reverse) {
+            SuperstructureState from,
+            SuperstructureState to,
+            boolean reverse,
+            boolean restricted) {
         graph.addEdge(
-            to,
-            from,
-            EdgeCommand.builder()
-                .command(getEdgeCommand(to, from))
-                .restricted(restricted)
-                .build());
-      }
+                from,
+                to,
+                EdgeCommand.builder()
+                        .command(getEdgeCommand(from, to))
+                        .restricted(restricted)
+                        .build());
+        if (reverse) {
+            graph.addEdge(
+                    to,
+                    from,
+                    EdgeCommand.builder()
+                            .command(getEdgeCommand(to, from))
+                            .restricted(restricted)
+                            .build());
+        }
     }
 
     /**
      * Adds a non-reversible edge between two states.
-     * @param from The source state
-     * @param to The target state
+     *
+     * @param from       The source state
+     * @param to         The target state
      * @param restricted If true, this edge can only be used when transitioning directly to its target state
      */
     private void addEdge(SuperstructureState from, SuperstructureState to, boolean restricted) {
@@ -424,32 +429,35 @@ public class Superstructure extends SubsystemBase {
 
     /**
      * Adds a non-reversible, non-restricted edge between two states.
+     *
      * @param from The source state
-     * @param to The target state
+     * @param to   The target state
      */
     private void addEdge(SuperstructureState from, SuperstructureState to) {
         addEdge(from, to, false);
     }
 
 
-
-    /** All edge commands should finish and exit properly. */
+    /**
+     * All edge commands should finish and exit properly.
+     */
     @Builder(toBuilder = true)
     @Getter
     public static class EdgeCommand extends DefaultEdge {
-      private final Command command;
-      @Builder.Default private final boolean restricted = false;
+        private final Command command;
+        @Builder.Default
+        private final boolean restricted = false;
     }
 
     public boolean hasCoral() {
         return endEffectorArm.isHasCoral();
     }
 
-    public boolean hasAlgae(){
+    public boolean hasAlgae() {
         return endEffectorArm.isHasAlgae();
     }
 
-    public boolean indexedCoral(){
+    public boolean indexedCoral() {
         return intake.isIndexRollerHasCoral();
     }
 
@@ -458,29 +466,32 @@ public class Superstructure extends SubsystemBase {
     }
 
     private Command runIntake(DoubleSupplier pivotAngle) {
-        return Commands.runOnce(() ->intake.setPivotAngle(pivotAngle));
+        return Commands.runOnce(() -> intake.setPivotAngle(pivotAngle));
     }
 
     private Command runEndEffectorArm(DoubleSupplier pivotAngle) {
-        return Commands.runOnce(() ->endEffectorArm.setPivotAngle(pivotAngle));
+        return Commands.runOnce(() -> endEffectorArm.setPivotAngle(pivotAngle));
     }
 
     private Command runElevator(DoubleSupplier position) {
-        return Commands.runOnce(() ->elevator.setElevatorPosition(position));
-    }
-    
-      /** Runs elevator and pivot to {@link SuperstructurePose} pose. Ends immediately. */
-    private Command runSuperstructurePose(SuperstructurePose pose) {
-        return runElevator(pose.elevatorHeight())
-            .alongWith(runEndEffectorArm(pose.endEffectorAngle())
-            .alongWith(runIntake(pose.intakeAngle())));
+        return Commands.runOnce(() -> elevator.setElevatorPosition(position));
     }
 
-    public boolean poseAtGoal(){
+    /**
+     * Runs elevator and pivot to {@link SuperstructurePose} pose. Ends immediately.
+     */
+    private Command runSuperstructurePose(SuperstructurePose pose) {
+        return runElevator(pose.elevatorHeight())
+                .alongWith(runEndEffectorArm(pose.endEffectorAngle())
+                        .alongWith(runIntake(pose.intakeAngle())));
+    }
+
+    public boolean poseAtGoal() {
         return elevator.isAtGoal() && endEffectorArm.isAtGoal() && intake.isAtGoal();
     }
-    private Command runSuperstructureRollers(SuperstructureState state){
-        return Commands.runOnce(() ->{
+
+    private Command runSuperstructureRollers(SuperstructureState state) {
+        return Commands.runOnce(() -> {
             endEffectorArm.setRollerVoltage(state.getValue().getEndEffectorVolts());
             intake.setIntakeRollerVoltage(state.getValue().getIntakeVolts());
             intake.setIndexRollerVoltage(state.getValue().getIndexRollerVolts());
@@ -491,41 +502,41 @@ public class Superstructure extends SubsystemBase {
     private Command getEdgeCommand(SuperstructureState from, SuperstructureState to) {
         if (from == SuperstructureState.START && to == SuperstructureState.IDLE) {
             return runEndEffectorArm(to.getValue().getPose().endEffectorAngle())
-                .alongWith(runIntake(to.getValue().getPose().intakeAngle()))
-                .andThen(
-                    Commands.waitUntil(endEffectorArm::isAtGoal),
-                    elevator.zeroElevator(),
-                    Commands.waitUntil(() -> !elevator.isZeroing())
-                );
+                    .alongWith(runIntake(to.getValue().getPose().intakeAngle()))
+                    .andThen(
+                            Commands.waitUntil(endEffectorArm::isAtGoal),
+                            elevator.zeroElevator(),
+                            Commands.waitUntil(() -> !elevator.isZeroing())
+                    );
         }
         // Special handling for coral indexing while holding algae - only move intake
         if (to == SuperstructureState.CORAL_INDEXED_INTAKE) {
             return runIntake(to.getValue().getPose().intakeAngle())
-                .andThen(
-                    Commands.waitUntil(intake::isAtGoal),
-                    runSuperstructureRollers(to)
-                );
+                    .andThen(
+                            Commands.waitUntil(intake::isAtGoal),
+                            runSuperstructureRollers(to)
+                    );
         }
         // is safe to flip inorder to produce a smoother elevator motion
         // TODO: Test this
         if (to == SuperstructureState.AVOID) {
             if (statesBelowFlip.contains(from)) {
                 return runElevator(to.getValue().getPose().elevatorHeight())
-                    .andThen(
-                        Commands.waitUntil(elevator::isAtGoal),
-                        runEndEffectorArm(to.getValue().getPose().endEffectorAngle()),
-                        runIntake(to.getValue().getPose().intakeAngle()),
-                        Commands.waitUntil(this::poseAtGoal)
-                    );
+                        .andThen(
+                                Commands.waitUntil(elevator::isAtGoal),
+                                runEndEffectorArm(to.getValue().getPose().endEffectorAngle()),
+                                runIntake(to.getValue().getPose().intakeAngle()),
+                                Commands.waitUntil(this::poseAtGoal)
+                        );
             } else if (statesAboveFlip.contains(from)) {
                 return runSuperstructurePose(to.getValue().getPose())
-                    .andThen(Commands.waitUntil(endEffectorArm::isAtGoal));
+                        .andThen(Commands.waitUntil(endEffectorArm::isAtGoal));
             } else {
                 return runSuperstructurePose(to.getValue().getPose())
-                    .andThen(Commands.waitUntil(elevator::isSafeToFlip));
+                        .andThen(Commands.waitUntil(elevator::isSafeToFlip));
             }
         }
         return runSuperstructurePose(to.getValue().getPose())
-            .andThen(Commands.waitUntil(this::poseAtGoal).andThen(runSuperstructureRollers(to)));
+                .andThen(Commands.waitUntil(this::poseAtGoal).andThen(runSuperstructureRollers(to)));
     }
 } 

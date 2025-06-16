@@ -107,12 +107,12 @@ public class RobotContainer {
                 intakeSubsystem = new IntakeSubsystem(
                         new IntakePivotIOReal(),
                         new RollerIOReal(
-                            RobotConstants.IntakeConstants.INTAKE_MOTOR_ID,
-                            RobotConstants.CANIVORE_CAN_BUS_NAME,
-                            RobotConstants.IntakeConstants.STATOR_CURRENT_LIMIT_AMPS,
-                            RobotConstants.IntakeConstants.SUPPLY_CURRENT_LIMIT_AMPS,
-                            RobotConstants.IntakeConstants.IS_INVERT,
-                            RobotConstants.IntakeConstants.IS_BRAKE
+                                RobotConstants.IntakeConstants.INTAKE_MOTOR_ID,
+                                RobotConstants.CANIVORE_CAN_BUS_NAME,
+                                RobotConstants.IntakeConstants.STATOR_CURRENT_LIMIT_AMPS,
+                                RobotConstants.IntakeConstants.SUPPLY_CURRENT_LIMIT_AMPS,
+                                RobotConstants.IntakeConstants.IS_INVERT,
+                                RobotConstants.IntakeConstants.IS_BRAKE
                         ),
                         // new RollerIOReal(
                         //     RobotConstants.IntakeConstants.INDEX_MOTOR_ID,
@@ -128,12 +128,12 @@ public class RobotContainer {
                 endEffectorArmSubsystem = new EndEffectorArmSubsystem(
                         new EndEffectorArmPivotIOReal(),
                         new RollerIOReal(
-                            RobotConstants.EndEffectorArmConstants.END_EFFECTOR_ARM_ROLLER_MOTOR_ID,
-                            RobotConstants.CANIVORE_CAN_BUS_NAME,
-                            RobotConstants.EndEffectorArmConstants.STATOR_CURRENT_LIMIT_AMPS,
-                            RobotConstants.EndEffectorArmConstants.SUPPLY_CURRENT_LIMIT_AMPS,
-                            RobotConstants.EndEffectorArmConstants.IS_INVERT,
-                            RobotConstants.EndEffectorArmConstants.IS_BRAKE
+                                RobotConstants.EndEffectorArmConstants.END_EFFECTOR_ARM_ROLLER_MOTOR_ID,
+                                RobotConstants.CANIVORE_CAN_BUS_NAME,
+                                RobotConstants.EndEffectorArmConstants.STATOR_CURRENT_LIMIT_AMPS,
+                                RobotConstants.EndEffectorArmConstants.SUPPLY_CURRENT_LIMIT_AMPS,
+                                RobotConstants.EndEffectorArmConstants.IS_INVERT,
+                                RobotConstants.EndEffectorArmConstants.IS_BRAKE
                         ),
                         new BeambreakIOReal(RobotConstants.BeamBreakConstants.ENDEFFECTORARM_CORAL_BEAMBREAK_ID),
                         new BeambreakIOReal(RobotConstants.BeamBreakConstants.ENDEFFECTORARM_ALGAE_BEAMBREAK_ID)
@@ -149,10 +149,10 @@ public class RobotContainer {
                 elevatorSubsystem = new ElevatorSubsystem(new ElevatorIOSim());
                 intakeSubsystem = new IntakeSubsystem(
                         new IntakePivotIOSim(),
-                        new RollerIOSim(1, RobotConstants.IntakeConstants.ROLLER_RATIO, 
-                            new SimpleMotorFeedforward(0.0, 0.24),
-                            new ProfiledPIDController(0.5, 0.0, 0.0,
-                                new TrapezoidProfile.Constraints(15, 1))),
+                        new RollerIOSim(1, RobotConstants.IntakeConstants.ROLLER_RATIO,
+                                new SimpleMotorFeedforward(0.0, 0.24),
+                                new ProfiledPIDController(0.5, 0.0, 0.0,
+                                        new TrapezoidProfile.Constraints(15, 1))),
                         // new RollerIOSim(1, 1.0, new SimpleMotorFeedforward(0.0, 0.24),
                         //         new ProfiledPIDController(0.5, 0.0, 0.0,
                         //                 new TrapezoidProfile.Constraints(15, 1))),
@@ -223,7 +223,7 @@ public class RobotContainer {
         }
 
 
-        superstructure = new Superstructure(intakeSubsystem,endEffectorArmSubsystem,elevatorSubsystem);
+        superstructure = new Superstructure(intakeSubsystem, endEffectorArmSubsystem, elevatorSubsystem);
 
         // Initialize the update manager
         updateManager = new UpdateManager(swerve,
@@ -250,8 +250,6 @@ public class RobotContainer {
     //     autoChooser.addOption("None", "None");
     // }
 
-
-    
 
     private void configureDriverBindings() {
         //TODO: consider enabling the auto scoring button whilst the superstructure is intaking
@@ -315,9 +313,8 @@ public class RobotContainer {
         //         );
 
 
-
         driverController
-                .button(1)
+                .a()
                 .whileTrue(
                         new SuperCycleCommand(superstructure,
                                 indicatorSubsystem,
@@ -326,29 +323,29 @@ public class RobotContainer {
                 );
 
         driverController
-                .button(2)
+                .b()
                 .whileTrue(
-                    Commands.either(
-                        superstructure
-                            .runGoal(() -> SuperstructureState.CORAL_INDEXED_INTAKE)
-                            .until(() -> superstructure.hasAlgae() && superstructure.indexedCoral()),
-                        superstructure
-                            .runGoal(() -> SuperstructureState.CORAL_GROUND_INTAKE)
-                            .until(() -> superstructure.hasCoral()),
-                        superstructure::hasAlgae
-                    )
+                        Commands.either(
+                                superstructure
+                                        .runGoal(() -> SuperstructureState.CORAL_INDEXED_INTAKE)
+                                        .until(() -> superstructure.hasAlgae() && superstructure.indexedCoral()),
+                                superstructure
+                                        .runGoal(() -> SuperstructureState.CORAL_GROUND_INTAKE)
+                                        .until(() -> superstructure.hasCoral()),
+                                superstructure::hasAlgae
+                        )
                 );
         driverController
-                .button(3)
+                .x()
                 .whileTrue(
-                    superstructure
-                        .runGoal(() -> SuperstructureState.NET_SCORE)
-                        .until(driverController.button(4))
-                        .andThen(
-                            superstructure
-                                .runGoal(() -> SuperstructureState.NET_SCORE_EJECT)
-                                .until(() -> !superstructure.hasAlgae())
-                        )
+                        superstructure
+                                .runGoal(() -> SuperstructureState.NET_SCORE)
+                                .until(driverController.y())
+                                .andThen(
+                                        superstructure
+                                                .runGoal(() -> SuperstructureState.NET_SCORE_EJECT)
+                                                .until(() -> !superstructure.hasAlgae())
+                                )
                 );
     }
 
@@ -384,38 +381,38 @@ public class RobotContainer {
                 );
 
         testerController
-            .b()
-            .whileTrue(
-                superstructure
-                    .runGoal(() -> SuperstructureState.L4)
-                    .until(testerController.x())
-                    .andThen(
+                .b()
+                .whileTrue(
                         superstructure
-                            .runGoal(() -> SuperstructureState.L4_EJECT)
-                            .until(() -> !superstructure.hasCoral())
-                    )
-            );
+                                .runGoal(() -> SuperstructureState.L4)
+                                .until(testerController.x())
+                                .andThen(
+                                        superstructure
+                                                .runGoal(() -> SuperstructureState.L4_EJECT)
+                                                .until(() -> !superstructure.hasCoral())
+                                )
+                );
 
         testerController
-            .button(4)
-            .whileTrue(
-                superstructure
-                    .runGoal(() -> SuperstructureState.P1)
-                    .until(superstructure::hasAlgae)
-            );
+                .x()
+                .whileTrue(
+                        superstructure
+                                .runGoal(() -> SuperstructureState.P1)
+                                .until(superstructure::hasAlgae)
+                );
 
         testerController
-            .button(5)
-            .whileTrue(
-                superstructure
-                    .runGoal(() -> SuperstructureState.NET_SCORE)
-                    .until(testerController.button(6))
-                    .andThen(
+                .leftBumper()
+                .whileTrue(
                         superstructure
-                            .runGoal(() -> SuperstructureState.NET_SCORE_EJECT)
-                            .until(() -> !superstructure.hasAlgae())
-                    )
-            );
+                                .runGoal(() -> SuperstructureState.NET_SCORE)
+                                .until(testerController.rightBumper())
+                                .andThen(
+                                        superstructure
+                                                .runGoal(() -> SuperstructureState.NET_SCORE_EJECT)
+                                                .until(() -> !superstructure.hasAlgae())
+                                )
+                );
     }
 
     public Command getAutonomousCommand() {
