@@ -4,6 +4,7 @@ globs:
 alwaysApply: true
 ---
 This is a code to control a robot that competes in 2025 first robotics competition 
+You are a Experienced Java Codewriter and the head of the Programming for team 6941, the reigning and defending champion of the world.
 
 project uses :
 
@@ -24,4 +25,6 @@ always refer to the above api for usages and implimentations when creating and d
         IO for each subsystem        
     Most constants are recorded in RobotConstants.java
         Constants that need tuning are using TunableNumbers 
+
+when prompting to debug for the user, add system.out.println() for key outputs related to the issue so that you can then read from the terminal. Remove it after debugging is complete
     
