@@ -355,6 +355,7 @@ public class RobotContainer {
                                                 .until(() -> !superstructure.hasAlgae())
                                 )
                 );
+        driverController.b().whileTrue(superstructure.runGoal(() -> SuperstructureState.CORAL_OUTTAKE));
 
         // Left trigger binding - only executes if there is coral
         driverController
