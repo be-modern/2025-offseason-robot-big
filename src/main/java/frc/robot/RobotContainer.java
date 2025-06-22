@@ -49,8 +49,9 @@ import frc.robot.subsystems.superstructure.elevator.ElevatorIOSim;
 import frc.robot.subsystems.superstructure.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.superstructure.endeffectorarm.*;
 import frc.robot.subsystems.superstructure.intake.*;
-import frc.robot.subsystems.questnav.OculusIOReal;
-import frc.robot.subsystems.questnav.OculusSubsystem;
+import frc.robot.subsystems.questnav.QuestNavIOReal;
+import frc.robot.subsystems.questnav.QuestNavIOSim;
+import frc.robot.subsystems.questnav.QuestNavSubsystem;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.roller.RollerIO;
 import frc.robot.subsystems.roller.RollerIOReal;
@@ -60,7 +61,7 @@ import org.frcteam6941.looper.UpdateManager;
 import org.littletonrobotics.AllianceFlipUtil;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import frc.robot.subsystems.questnav.OculusIO;
+import frc.robot.subsystems.questnav.QuestNavIO;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -98,7 +99,7 @@ public class RobotContainer {
     private LimelightSubsystem limelightSubsystem;
     private EndEffectorArmSubsystem endEffectorArmSubsystem;
     private Superstructure superstructure;
-    private OculusSubsystem oculusSubsystem;
+    private QuestNavSubsystem questNavSubsystem;
     private double lastResetTime = 0.0;
 
 
@@ -146,7 +147,7 @@ public class RobotContainer {
                     put(LIMELIGHT_LEFT, new LimelightIOReal(LIMELIGHT_LEFT));
                     put(LIMELIGHT_RIGHT, new LimelightIOReal(LIMELIGHT_RIGHT));
                 }});
-                oculusSubsystem = new OculusSubsystem(new OculusIOReal());
+                questNavSubsystem = new QuestNavSubsystem(new QuestNavIOReal());
             } else {
                 // Simulation initialization
                 indicatorSubsystem = new IndicatorSubsystem(new IndicatorIOSim());
@@ -175,7 +176,7 @@ public class RobotContainer {
                         new BeambreakIOSim(RobotConstants.BeamBreakConstants.ENDEFFECTORARM_CORAL_BEAMBREAK_ID),
                         new BeambreakIOSim(RobotConstants.BeamBreakConstants.ENDEFFECTORARM_ALGAE_BEAMBREAK_ID)
                 );
-                oculusSubsystem = new OculusSubsystem(new OculusIOReal());
+                questNavSubsystem = new QuestNavSubsystem(new QuestNavIOSim());
             }
         }
 
@@ -222,8 +223,8 @@ public class RobotContainer {
             elevatorSubsystem = new ElevatorSubsystem(new ElevatorIO() {
             });
         }
-        if (oculusSubsystem == null) {
-            oculusSubsystem = new OculusSubsystem(new OculusIO.Default());
+        if (questNavSubsystem == null) {
+            questNavSubsystem = new QuestNavSubsystem(new QuestNavIO.Default());
         }
 
 
@@ -268,23 +269,6 @@ public class RobotContainer {
                 true,
                 false), swerve));
 
-        oculusSubsystem.setDefaultCommand(Commands.run(() -> {
-            // Check if limelight ambiguity is below threshold and reset oculus pose if so
-            double minAmbiguity = limelightSubsystem.getMinimumAmbiguity();
-            if (minAmbiguity < RobotConstants.LimelightConstants.OCULUS_RESET_AMBIGUITY_THRESHOLD.get() && 
-                minAmbiguity != Double.MAX_VALUE
-                && Math.abs(swerve.getLocalizer().getSmoothedVelocity().getX())<1 && swerve.getLocalizer().getSmoothedVelocity().getY()<1) {
-                
-                Logger.recordOutput("Oculus/ResetPose", true);
-                
-                oculusSubsystem.resetPose(
-                    limelightSubsystem.getEstimatedPose().get()[0].pose(), 
-                    true
-                );
-            }else{
-                Logger.recordOutput("Oculus/ResetPose", false);
-            }
-        }, oculusSubsystem));
 
         driverController.start().onTrue(
                 Commands.runOnce(() -> {
@@ -441,7 +425,7 @@ public class RobotContainer {
                 .button(1)
                 .onTrue(
                         Commands.runOnce(
-                                () -> oculusSubsystem.resetPose(
+                                () -> questNavSubsystem.resetPose(
                                         swerve.getLocalizer().getCoarseFieldPose(Timer.getFPGATimestamp()), 
                                         true
                                 )

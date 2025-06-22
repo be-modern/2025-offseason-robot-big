@@ -484,4 +484,23 @@ public final class RobotConstants {
             public static final TunableNumber END_EFFECTOR_ARM_ROLLER_KS = new TunableNumber("EEARM/Roller/PID/ks", 0);
         }
     }
+
+    /**
+     * Constants for QuestNav subsystem (VR headset pose tracking)
+     */
+    public static class QuestNavConstants {
+        // Standard deviations for pose estimation (in meters and degrees)
+        public static final TunableNumber STD_DEV_X = new TunableNumber("QuestNav/StdDevX", 0.02);
+        public static final TunableNumber STD_DEV_Y = new TunableNumber("QuestNav/StdDevY", 0.02);
+        public static final TunableNumber STD_DEV_ROT_DEG = new TunableNumber("QuestNav/StdDevRotDeg", 2.0);
+        
+        // Transform from robot center to Quest headset (in meters and degrees)
+        // TODO: Measure and update these values based on actual Quest mounting position
+        public static final TunableNumber ROBOT_TO_QUEST_X = new TunableNumber("QuestNav/RobotToQuestX", 0.0);
+        public static final TunableNumber ROBOT_TO_QUEST_Y = new TunableNumber("QuestNav/RobotToQuestY", 0.0);
+        public static final TunableNumber ROBOT_TO_QUEST_ROT_DEG = new TunableNumber("QuestNav/RobotToQuestRotDeg", 0.0);
+        
+        // Enable/disable vision updates
+        public static final TunableNumber ENABLE_VISION_UPDATES = new TunableNumber("QuestNav/EnableVisionUpdates", 1.0);
+    }
 }
