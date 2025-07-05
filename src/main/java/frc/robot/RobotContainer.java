@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.aimSequences.AimGoalSupplier;
+import frc.robot.commands.aimSequences.ReefAimCommand;
 import frc.robot.commands.aimSequences.SuperCycleCommand;
 import frc.robot.display.Display;
 import frc.robot.subsystems.beambreak.BeambreakIO;
