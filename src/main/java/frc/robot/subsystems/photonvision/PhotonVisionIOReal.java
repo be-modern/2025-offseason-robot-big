@@ -9,9 +9,9 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import java.util.List;
-import java.util.Optional;
 
-import static frc.robot.RobotConstants.PhotonvisionConstants.PV_CAMERA_NAMES;
+import static frc.robot.RobotConstants.PhotonvisionConstants.*;
+import org.littletonrobotics.junction.Logger;
 
 public class PhotonVisionIOReal implements PhotonVisionIO {
 
@@ -19,13 +19,15 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
     private final PhotonCamera camera;
     private final int id;
     private double lastObservedConf;
-    private Optional<Pose2d> nearestCoralPosition = Optional.empty();
+    private Pose2d nearestCoralPosition = null;
     private int lastObservedPeriod = 0;
 
     public PhotonVisionIOReal(int id) {
         this.id = id;
         this.name = PV_CAMERA_NAMES[id];
+        System.out.println("PhotonVision: Attempting to connect to camera: " + name);
         camera = new PhotonCamera(name);
+        System.out.println("PhotonVision: Camera instance created for: " + name);
     }
 
     /**
@@ -97,10 +99,10 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
         List<PhotonPipelineResult> results = camera.getAllUnreadResults();
         if (results.isEmpty()) {
             lastObservedPeriod++;
-            if (lastObservedPeriod > 5) nearestCoralPosition = Optional.empty();
+            if (lastObservedPeriod > 5) nearestCoralPosition = null;
             return;
         }
-        for (int i = results.size(); i >= 0; i--) {
+        for (int i = results.size() - 1; i >= 0; i--) {
             /*
                 Logic:
                 1. Find the latest non-empty result
@@ -109,13 +111,58 @@ public class PhotonVisionIOReal implements PhotonVisionIO {
              */
             PhotonPipelineResult result = results.get(i);
             if (!result.hasTargets()) continue;
+            
+            // Reset period counter since we have new targets
+            lastObservedPeriod = 0;
+            
+            // Find the nearest target
+            Transform2d nearestTargetTransform = null;
+            double nearestDistance = Double.MAX_VALUE;
+            double bestConfidence = 0.0;
+            
+            // Get camera configuration
+            double cameraHeight = CAMERA_HEIGHT_METERS.get();
+            double cameraPitchRad = Math.toRadians(CAMERA_PITCH_DEGREES.get());
+            Transform2d cameraToRobot = new Transform2d(
+                new Translation2d(CAMERA_TO_ROBOT_X.get(), CAMERA_TO_ROBOT_Y.get()),
+                new Rotation2d(Math.toRadians(CAMERA_TO_ROBOT_ROTATION_DEGREES.get()))
+            );
+            
             for (PhotonTrackedTarget target : result.getTargets()) {
-                estimateGroundTargetPose(
-                        target,
-
-                )
+                Transform2d targetTransform = estimateGroundTargetPose(
+                    target,
+                    cameraHeight,
+                    cameraPitchRad,
+                    cameraToRobot
+                );
+                
+                if (targetTransform != null) {
+                    double distance = targetTransform.getTranslation().getNorm();
+                    
+                    // Prefer closer targets, but also consider confidence
+                    if (distance < nearestDistance && target.getPoseAmbiguity() >= 0) {
+                        nearestDistance = distance;
+                        nearestTargetTransform = targetTransform;
+                        bestConfidence = 1.0 - target.getPoseAmbiguity();
+                    }
+                }
             }
-
+            
+            // Update nearest coral position if we found a valid target
+            if (nearestTargetTransform != null) {
+                nearestCoralPosition = new Pose2d(
+                    nearestTargetTransform.getTranslation(),
+                    nearestTargetTransform.getRotation()
+                );
+                lastObservedConf = bestConfidence;
+                
+                // Log the detected coral position for debugging
+                Logger.recordOutput("PhotonVision/Camera" + id + "/NearestCoralDistance", nearestDistance);
+                Logger.recordOutput("PhotonVision/Camera" + id + "/NearestCoralConfidence", bestConfidence);
+                
+                System.out.println("PhotonVision Camera " + id + " detected coral at distance: " + nearestDistance + " meters");
+                break; // Use the latest result with targets
+            }
         }
     }
 }

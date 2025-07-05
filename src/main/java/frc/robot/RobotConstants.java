@@ -428,6 +428,15 @@ public final class RobotConstants {
         public static final String[] PV_CAMERA_NAMES = {"pv-cam1"};
         public static final boolean[] SNAPSHOT_ENABLED = {true};
         public static final int SNAPSHOT_PERIOD = 5; //seconds
+        
+        // Camera physical configuration
+        public static final TunableNumber CAMERA_HEIGHT_METERS = new TunableNumber("PhotonVision/cameraHeightMeters", 0.25);
+        public static final TunableNumber CAMERA_PITCH_DEGREES = new TunableNumber("PhotonVision/cameraPitchDegrees", -15.0);
+        
+        // Camera to robot transform (camera position relative to robot center)
+        public static final TunableNumber CAMERA_TO_ROBOT_X = new TunableNumber("PhotonVision/cameraToRobotX", 0.0);
+        public static final TunableNumber CAMERA_TO_ROBOT_Y = new TunableNumber("PhotonVision/cameraToRobotY", 0.0);
+        public static final TunableNumber CAMERA_TO_ROBOT_ROTATION_DEGREES = new TunableNumber("PhotonVision/cameraToRobotRotationDegrees", 0.0);
     }
 
     /**

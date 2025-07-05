@@ -1,7 +1,5 @@
 package frc.robot.subsystems.photonvision;
 
-import java.util.Optional;
-
 import static frc.robot.RobotConstants.PhotonvisionConstants.PV_CAMERA_NAMES;
 
 public class PhotonVisionIOSim implements PhotonVisionIO {
@@ -19,7 +17,7 @@ public class PhotonVisionIOSim implements PhotonVisionIO {
     public void updateInputs(PhotonVisionIOInputs inputs) {
         inputs.connected = connected;
         inputs.name = name;
-        inputs.nearestCoralPosition = Optional.empty();//TODO: random coral position based on alliance color
+        inputs.nearestCoralPosition = null;//TODO: random coral position based on alliance color
     }
 
     @Override

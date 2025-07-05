@@ -3,8 +3,6 @@ package frc.robot.subsystems.photonvision;
 import edu.wpi.first.math.geometry.Pose2d;
 import org.littletonrobotics.junction.AutoLog;
 
-import java.util.Optional;
-
 /**
  * Currently it is designed for object detection only.
  */
@@ -21,7 +19,7 @@ public interface PhotonVisionIO {
         public int id;
         public boolean connected = false;
         public int lastObservedPeriod = 0;
-        public Optional<Pose2d> nearestCoralPosition = Optional.empty();
+        public Pose2d nearestCoralPosition = null;
         public double lastObservedConf = 0.0;
     }
 
