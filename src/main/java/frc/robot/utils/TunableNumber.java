@@ -8,6 +8,7 @@ import frc.robot.RobotConstants;
  * default if not or
  * value not in dashboard.
  */
+@Deprecated
 public class TunableNumber {
     private static final String tableKey = "TunableNumbers";
 

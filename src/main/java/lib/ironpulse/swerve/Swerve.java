@@ -16,8 +16,10 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import lib.ironpulse.utils.LoggedTracer;
+import lib.ironpulse.utils.Logging;
 import lombok.Getter;
 import org.littletonrobotics.junction.Logger;
 
@@ -102,7 +104,7 @@ public class Swerve extends SubsystemBase {
     for (int i = 0; i < swerveModulePositionsWithTime.size(); i++) {
       var positionWithTime = swerveModulePositionsWithTime.get(i);
       poseEstimator.updateWithTime(
-          positionWithTime.getFirst(), rotations[i],
+          Timer.getTimestamp(), rotations[i], // FIXME: there's a discrepancy between Phoenix time and rio time. need to find the offset. this fix is temporary
           positionWithTime.getSecond()
       );
     }
@@ -220,7 +222,9 @@ public class Swerve extends SubsystemBase {
       Pose3d visionRobotPoseMeters,
       double timestampSeconds,
       Matrix<N4, N1> visionMeasurementStdDevs) {
+    odometryLock.lock();
     poseEstimator.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+    odometryLock.unlock();
   }
 
 

@@ -12,7 +12,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -26,7 +25,6 @@ import frc.robot.subsystems.beambreak.BeambreakIO;
 import frc.robot.subsystems.beambreak.BeambreakIOReal;
 import frc.robot.subsystems.beambreak.BeambreakIOSim;
 import frc.robot.subsystems.climber.ClimberIO;
-import frc.robot.subsystems.climber.ClimberIOReal;
 import frc.robot.subsystems.climber.ClimberIOSim;
 import frc.robot.subsystems.climber.ClimberSubsystem;
 import frc.robot.subsystems.indicator.IndicatorIO;
@@ -36,9 +34,6 @@ import frc.robot.subsystems.indicator.IndicatorSubsystem;
 import frc.robot.subsystems.limelight.LimelightIOReal;
 import frc.robot.subsystems.limelight.LimelightIOReplay;
 import frc.robot.subsystems.limelight.LimelightSubsystem;
-import frc.robot.subsystems.questnav.QuestNavIO;
-import frc.robot.subsystems.questnav.QuestNavIOReal;
-import frc.robot.subsystems.questnav.QuestNavIOSim;
 import frc.robot.subsystems.questnav.QuestNavSubsystem;
 import frc.robot.subsystems.roller.RollerIO;
 import frc.robot.subsystems.roller.RollerIOReal;
@@ -65,6 +60,7 @@ import lib.ironpulse.swerve.sim.ImuIOSim;
 import lib.ironpulse.swerve.sim.SwerveModuleIOSim;
 import lib.ironpulse.swerve.sjtu6.ImuIOPigeon;
 import lib.ironpulse.swerve.sjtu6.SwerveModuleIOSJTU6;
+import org.littletonrobotics.junction.Logger;
 
 import java.util.HashMap;
 
@@ -99,6 +95,7 @@ public class RobotContainer {
   private EndEffectorArmSubsystem endEffectorArmSubsystem;
   private Superstructure superstructure;
   private QuestNavSubsystem questNavSubsystem;
+  private RobotStateRecorder robotStateRecorder = RobotStateRecorder.getInstance(); // NOTE: better to init beforehead
   private double lastResetTime = 0.0;
 
 
@@ -138,7 +135,7 @@ public class RobotContainer {
             ),
             new BeambreakIOReal(RobotConstants.BeamBreakConstants.INTAKE_BEAMBREAK_ID)
         );
-        climberSubsystem = new ClimberSubsystem(new ClimberIOReal());
+        climberSubsystem = new ClimberSubsystem(new ClimberIOSim());
         endEffectorArmSubsystem = new EndEffectorArmSubsystem(
             new EndEffectorArmPivotIOReal(),
             new RollerIOReal(
@@ -156,7 +153,8 @@ public class RobotContainer {
           put(LIMELIGHT_LEFT, new LimelightIOReal(LIMELIGHT_LEFT));
           put(LIMELIGHT_RIGHT, new LimelightIOReal(LIMELIGHT_RIGHT));
         }});
-        questNavSubsystem = new QuestNavSubsystem(new QuestNavIOReal());
+//        questNavSubsystem = new QuestNavSubsystem(new QuestNavIOReal());
+        
       } else {
         // Simulation initialization
         swerve = new Swerve(
@@ -181,7 +179,8 @@ public class RobotContainer {
                     new TrapezoidProfile.Constraints(15, 1))),
             new BeambreakIOSim(RobotConstants.BeamBreakConstants.INTAKE_BEAMBREAK_ID)
         );
-        climberSubsystem = new ClimberSubsystem(new ClimberIOSim());
+        climberSubsystem = new ClimberSubsystem(new ClimberIO() {
+        });
         limelightSubsystem = new LimelightSubsystem(new HashMap<>() {{
           put(LIMELIGHT_LEFT, new LimelightIOReal(LIMELIGHT_LEFT));
           put(LIMELIGHT_RIGHT, new LimelightIOReal(LIMELIGHT_RIGHT));
@@ -194,7 +193,7 @@ public class RobotContainer {
             new BeambreakIOSim(RobotConstants.BeamBreakConstants.ENDEFFECTORARM_CORAL_BEAMBREAK_ID),
             new BeambreakIOSim(RobotConstants.BeamBreakConstants.ENDEFFECTORARM_ALGAE_BEAMBREAK_ID)
         );
-        questNavSubsystem = new QuestNavSubsystem(new QuestNavIOSim());
+//        questNavSubsystem = new QuestNavSubsystem(new QuestNavIOSim());
 
       }
     }
@@ -242,9 +241,9 @@ public class RobotContainer {
       elevatorSubsystem = new ElevatorSubsystem(new ElevatorIO() {
       });
     }
-    if (questNavSubsystem == null) {
-      questNavSubsystem = new QuestNavSubsystem(new QuestNavIO.Default());
-    }
+//    if (questNavSubsystem == null) {
+//      questNavSubsystem = new QuestNavSubsystem(new QuestNavIO.Default());
+//    }
 
 
     superstructure = new Superstructure(intakeSubsystem, endEffectorArmSubsystem, elevatorSubsystem);
@@ -277,7 +276,7 @@ public class RobotContainer {
             swerve,
             () -> -driverController.getLeftY(),
             () -> -driverController.getLeftX(),
-            () -> driverController.getRightX(),
+            () -> -driverController.getRightX(),
             RobotStateRecorder::getPoseDriverRobotCurrent,
             MetersPerSecond.of(0.04),
             DegreesPerSecond.of(3.0)
@@ -415,7 +414,7 @@ public class RobotContainer {
                     .until(() -> !superstructure.hasAlgae())
             )
     );
-    testerController.start().onTrue(
+    testerController.start().whileTrue(
         Commands.runOnce(() -> {
               destinationSupplier.setCurrentGamePiece(DestinationSupplier.GamePiece.CORAL_SCORING);
             })
@@ -423,6 +422,7 @@ public class RobotContainer {
                 new ReefAimCommand(swerve, indicatorSubsystem)
             )
     );
+
   }
 
   public Command getAutonomousCommand() {
@@ -526,14 +526,30 @@ public class RobotContainer {
 
   public void robotPeriodic() {
     limelightSubsystem.estimatedPose.ifPresent(estimate -> {
-      if (estimate[0] != null)
+      if (estimate[0] != null) {
         swerve.addVisionMeasurement(
             new Pose3d(estimate[0].pose()), estimate[0].timestampSeconds(), VecBuilder.fill(0.5, 0.5, 0.5, 9999.0)
         );
-      if (estimate[1] != null)
+      }
+
+      if (estimate[1] != null) {
         swerve.addVisionMeasurement(
-          new Pose3d(estimate[1].pose()), estimate[1].timestampSeconds(), VecBuilder.fill(0.5, 0.5, 0.5, 9999.0)
-      );
+            new Pose3d(estimate[1].pose()), estimate[1].timestampSeconds(), VecBuilder.fill(0.5, 0.5, 0.5, 9999.0)
+        );
+      }
     });
+
+    var now = Seconds.of(Timer.getTimestamp());
+    RobotStateRecorder.getInstance().putTransform(
+        swerve.getEstimatedPose(), now,
+        TransformRecorder.kFrameWorld,
+        TransformRecorder.kFrameRobot
+    );
+    RobotStateRecorder.putVelocityRobot(now, swerve.getChassisSpeeds());
+
+    Logger.recordOutput("TF/TWR", RobotStateRecorder.getPoseWorldRobotCurrent());
+    Logger.recordOutput("TF/TDR", RobotStateRecorder.getPoseDriverRobotCurrent());
+    Logger.recordOutput("TF/VR", RobotStateRecorder.getPoseDriverRobotCurrent());
+    Logger.recordOutput("TF/VWR", RobotStateRecorder.getVelocityWorldRobotCurrent());
   }
 }

@@ -8,14 +8,12 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import lib.ironpulse.rbd.TransformRecorder;
 
 import static edu.wpi.first.units.Units.Seconds;
 import static lib.ironpulse.math.MathTools.toPose2d;
 
-public class RobotStateRecorder extends TransformRecorder implements Subsystem {
+public class RobotStateRecorder extends TransformRecorder{
   private static RobotStateRecorder instance;
   private static TimeInterpolatableBuffer<Pose2d> velocityRobotBuffer;
 
@@ -27,9 +25,6 @@ public class RobotStateRecorder extends TransformRecorder implements Subsystem {
     putTransform(kTransformWorldDriverStationBlue, kFrameWorld, kFrameDriverStationBlue); // static: TWorldDSB
     putTransform(kTransformWorldDriverStationRed, kFrameWorld, kFrameDriverStationRed); // static TWorldDSR
     putTransform(new Pose3d(), Seconds.of(0.0), kFrameWorld, kFrameRobot); // dynamic TWorldRobot at origin
-
-    // register update
-    CommandScheduler.getInstance().registerSubsystem(new Subsystem[]{this});
   }
 
   public static RobotStateRecorder getInstance() {
@@ -47,7 +42,7 @@ public class RobotStateRecorder extends TransformRecorder implements Subsystem {
     return velocityRobotBuffer.getSample(Timer.getTimestamp()).orElse(new Pose2d());
   }
 
-  public static Pose2d getVelocityWorldRobot() {
+  public static Pose2d getVelocityWorldRobotCurrent() {
     // robot-relative velocity (dx, dy, dθ) and current robot pose in world
     Pose2d velocityRobot = getVelocityRobotCurr();
     Pose3d poseWorldRobot = getPoseWorldRobotCurrent();
@@ -80,11 +75,4 @@ public class RobotStateRecorder extends TransformRecorder implements Subsystem {
         TransformRecorder.kFrameRobot
     ).orElse(new Pose3d());
   }
-
-  @Override
-  public void periodic() {
-
-  }
-
-
 }

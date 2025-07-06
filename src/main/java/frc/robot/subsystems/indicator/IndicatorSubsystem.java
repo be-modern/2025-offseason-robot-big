@@ -35,14 +35,14 @@ public class IndicatorSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        switch (currentPattern) {
-            case AFTER_INTAKE, RESET_ODOM, AIMED -> resetLed();
-            default -> {
-            }
-        }
-        io.updateInputs(inputs);
-        Logger.processInputs("Indicator", inputs);
-        LoggedTracer.record("Indicator");
+//        switch (currentPattern) {
+//            case AFTER_INTAKE, RESET_ODOM, AIMED -> resetLed();
+//            default -> {
+//            }
+//        }
+//        io.updateInputs(inputs);
+//        Logger.processInputs("Indicator", inputs);
+//        LoggedTracer.record("Indicator");
     }
 
     private void resetLed() {

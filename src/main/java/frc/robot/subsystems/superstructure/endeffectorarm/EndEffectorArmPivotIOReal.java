@@ -38,7 +38,6 @@ public class EndEffectorArmPivotIOReal implements EndEffectorArmPivotIO {
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
         config.CurrentLimits.StatorCurrentLimit = 80.0;
         config.CurrentLimits.StatorCurrentLimitEnable = true;
-        config.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = 0.1;
 
         //initialize CANcoder
         CANcoderConfiguration CANconfig = new CANcoderConfiguration();

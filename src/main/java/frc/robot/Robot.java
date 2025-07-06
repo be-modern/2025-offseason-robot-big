@@ -25,7 +25,7 @@ public class Robot extends LoggedRobot {
   private RobotContainer robotContainer;
 
   public Robot() {
-    super(RobotConstants.LOOPER_DT);
+
   }
 
   @Override
@@ -64,13 +64,12 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void robotPeriodic() {
-    LoggedTracer.reset();
     PhoenixUtils.refreshAll();
     CommandScheduler.getInstance().run();
 
     LoggedTracer.record("Commands");
     LoggedTracer.record("RobotPeriodic");
-    if(RobotConstants.TUNING)
+    if (RobotConstants.TUNING)
       NTParameterRegistry.refresh();
     robotContainer.robotPeriodic();
   }

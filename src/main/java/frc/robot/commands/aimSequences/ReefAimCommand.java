@@ -28,6 +28,8 @@ public class ReefAimCommand extends Command {
   private boolean rightReef; // true if shooting right reef
   private boolean translationOnTarget = false;
   private boolean rotationOnTarget = false;
+  private boolean translationStationary = false;
+  private boolean rotationStationary = false;
   private Pose2d poseWorldRobot, velocityWorldRobot, tagPose, poseWorldTarget, finalDestinationPose;
   private Translation2d translationalVelocity, controllerVelocity;
   private ProfiledPIDController translationController;
@@ -82,7 +84,7 @@ public class ReefAimCommand extends Command {
 
     // get current state
     poseWorldRobot = RobotStateRecorder.getPoseWorldRobotCurrent().toPose2d();
-    velocityWorldRobot = RobotStateRecorder.getVelocityWorldRobot();
+    velocityWorldRobot = RobotStateRecorder.getVelocityWorldRobotCurrent();
 
     // calculate destination
     tagPose = AimGoalSupplier.getNearestTag(poseWorldRobot);
@@ -109,6 +111,7 @@ public class ReefAimCommand extends Command {
     poseWorldRobot = RobotStateRecorder.getPoseWorldRobotCurrent().toPose2d();
     poseWorldTarget = AimGoalSupplier.getDriveTarget(poseWorldRobot, finalDestinationPose);
     Pose2d poseRobotTarget = poseWorldTarget.relativeTo(poseWorldRobot);
+    velocityWorldRobot = RobotStateRecorder.getVelocityWorldRobotCurrent();
 
     // compute translation error, tu
     Translation2d pRT = poseRobotTarget.getTranslation();
@@ -137,20 +140,31 @@ public class ReefAimCommand extends Command {
 
   @Override
   public boolean isFinished() {
-
     Pose2d poseRobotTarget = poseWorldTarget.relativeTo(poseWorldRobot);
     translationOnTarget = epsilonEquals(
         poseRobotTarget.getTranslation(), new Translation2d(),
         ReefAimCommandParamsNT.translationOnTargetToleranceMeter.getValue()
     );
     rotationOnTarget = epsilonEquals(
-        poseRobotTarget.getRotation().getRadians(),
+        poseRobotTarget.getRotation().getDegrees(),
         0.0,
-        Degrees.of(ReefAimCommandParamsNT.rotationOnTargetToleranceDegree.getValue()).in(Radians)
+        ReefAimCommandParamsNT.rotationOnTargetToleranceDegree.getValue()
     );
-    Logger.recordOutput(kTag + "translationOnTarget", translationOnTarget);
-    Logger.recordOutput(kTag + "rotationOnTarget", rotationOnTarget);
-    return translationOnTarget && rotationOnTarget;
+
+    translationStationary = epsilonEquals(
+        velocityWorldRobot.getTranslation(), new Translation2d(),
+        ReefAimCommandParamsNT.translationOnTargetVelocityMetersPerSecond.getValue()
+    );
+    rotationStationary = epsilonEquals(
+        velocityWorldRobot.getRotation().getDegrees(), 0.0,
+        ReefAimCommandParamsNT.rotationOnTargetVelocityToleranceDegreesPerSecond.getValue()
+    );
+
+    Logger.recordOutput(kTag + "/translationOnTarget", translationOnTarget);
+    Logger.recordOutput(kTag + "/rotationOnTarget", rotationOnTarget);
+    Logger.recordOutput(kTag + "/translationStationary", translationStationary);
+    Logger.recordOutput(kTag + "/rotationStationary", rotationStationary);
+    return translationOnTarget && rotationOnTarget && translationStationary && rotationStationary;
   }
 
   @Override
@@ -168,19 +182,21 @@ public class ReefAimCommand extends Command {
 
   @NTParameter(tableName = "Params/" + kTag)
   public static class ReefAimCommandParams {
-    static final double translationKp = 4.5;
-    static final double translationKi = 0.0;
-    static final double translationKd = 0.0;
-    static final double translationVelocityMax = 4.5;
-    static final double translationAccelerationMax = 17.0;
+    static final double translationKp = 4.8;
+    static final double translationKi = 0.05;
+    static final double translationKd = 0.2;
+    static final double translationVelocityMax = 4.2;
+    static final double translationAccelerationMax = 25.0;
 
     static final double rotationKp = 5.0;
     static final double rotationKi = 0.0;
     static final double rotationKd = 0.0;
-    static final double rotationVelocityMax = 5.0;
+    static final double rotationVelocityMax = 7.0;
     static final double rotationAccelerationMax = 20.0;
 
-    static final double translationOnTargetToleranceMeter = 0.02;
+    static final double translationOnTargetToleranceMeter = 0.01;
+    static final double translationOnTargetVelocityMetersPerSecond = 0.05;
     static final double rotationOnTargetToleranceDegree = 1;
+    static final double rotationOnTargetVelocityToleranceDegreesPerSecond = 5.0;
   }
 }

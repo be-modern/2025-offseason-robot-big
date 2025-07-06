@@ -224,16 +224,15 @@ public final class RobotConstants {
     public static SwerveModuleLimit kDefaultSwerveModuleLimit = SwerveModuleLimit.builder()
         // v (mps) = 6000.0 (foc max omega in rpm) / 60.0 / reduction (drive gear ratio 7) * circumference
         .maxDriveVelocity(MetersPerSecond.of(4.559797259))
-        // accelerate in 0.1s TODO: sysid needed
-        .maxDriveAcceleration(MetersPerSecondPerSecond.of(4.559797259 / 0.1))
+        .maxDriveAcceleration(MetersPerSecondPerSecond.of(46.911649))
         // omega (rps) = 6000.0 (foc max omega in rpm) / 60.0 / reduction
         .maxSteerAngularVelocity(RotationsPerSecond.of(6000.0 / 60.0 / 22.0))
         // accelerate in 0.1s // TODO: sysid needed
-        .maxSteerAngularAcceleration(RotationsPerSecondPerSecond.of(6000.0 / 60.0 / 22.0 / 0.1))
+        .maxSteerAngularAcceleration(RotationsPerSecondPerSecond.of(6000.0 / 60.0 / 22.0 / 0.05))
         .build();
     public static SwerveLimit kDefaultSwerveLimit = SwerveLimit.builder()
         .maxLinearVelocity(MetersPerSecond.of(4.5))
-        .maxSkidAcceleration(MetersPerSecondPerSecond.of(22.0))
+        .maxSkidAcceleration(MetersPerSecondPerSecond.of(27.0))
         // must be smaller than 4.5 / (dist * sqrt(2)) to be actually effective
         .maxAngularVelocity(DegreesPerSecond.of(450.0))
         // accelerate in 0.2s, also must be smaller than the defined module limit to be actually effective
@@ -408,7 +407,7 @@ public final class RobotConstants {
     public static final TunableNumber INTAKE_PIVOT_JERK = new TunableNumber("INTAKE_PIVOT/jerk", 0);
     public static final TunableNumber INTAKE_PIVOT_TOLERANCE = new TunableNumber("INTAKE_PIVIOT/tolerance", 3.5);
 
-    public static final double INTAKE_PIVOT_ENCODER_OFFSET = 0.17822265625 - 0.25;
+    public static final double INTAKE_PIVOT_ENCODER_OFFSET = 0.192626 - 0.25;
     //Motion constants for intake roller
     public static final TunableNumber INTAKE_VOLTAGE = new TunableNumber("INTAKE_ROLLER/intakeVoltage", 15.0);
     public static final TunableNumber INDEX_ROLLER_VOLTAGE = new TunableNumber("INTAKE_ROLLER/indexRollerVoltage", 15.0);
