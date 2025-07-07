@@ -531,6 +531,10 @@ public final class RobotConstants {
         public static final TunableNumber CAMERA_HEIGHT_METERS = new TunableNumber("PhotonVision/cameraHeightMeters", 0.75);
         public static final TunableNumber CAMERA_PITCH_DEGREES = new TunableNumber("PhotonVision/cameraPitchDegrees", -25.0);
         
+        // Camera field of view (FOV) - critical for accurate pixel-to-world coordinate conversion
+        public static final TunableNumber CAMERA_HORIZONTAL_FOV_DEGREES = new TunableNumber("PhotonVision/cameraHorizontalFOVDegrees", 70.0);
+        public static final TunableNumber CAMERA_VERTICAL_FOV_DEGREES = new TunableNumber("PhotonVision/cameraVerticalFOVDegrees", 43.0);
+        
         // Camera to robot transform (camera position relative to robot center)
         public static final TunableNumber CAMERA_TO_ROBOT_X = new TunableNumber("PhotonVision/cameraToRobotX", 0.14);  // 0.14m front
         public static final TunableNumber CAMERA_TO_ROBOT_Y = new TunableNumber("PhotonVision/cameraToRobotY", 0.0);   // 0.00m left
