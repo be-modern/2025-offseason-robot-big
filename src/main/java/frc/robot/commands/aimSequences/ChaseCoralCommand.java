@@ -1,19 +1,19 @@
 package frc.robot.commands.aimSequences;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.RobotStateRecorder;
 import frc.robot.subsystems.photonvision.PhotonVisionSubsystem;
+import frc.robot.utils.CoralRecorder;
 import lib.ironpulse.swerve.Swerve;
 import lib.ironpulse.utils.Logging;
 import lib.ironpulse.utils.TimeDelayedBoolean;
 import lib.ntext.NTParameter;
-import org.littletonrobotics.junction.Logger;
-import org.photonvision.PhotonCamera;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class ChaseCoralCommand extends Command {
   private final Swerve swerve;
@@ -23,7 +23,12 @@ public class ChaseCoralCommand extends Command {
   private final PIDController turnController;
   private final TimeDelayedBoolean isBlind = new TimeDelayedBoolean(0.5);
   State state = State.ACTIVE_CHASING;
-  private Pair<Double, Double> chaseTarget;
+  private double forwardVel = 0.0;
+  private double turnVel = 0.0;
+  private Rotation2d prevDirection;
+
+  private CoralRecorder.CoralInfo info = null;
+  private Pose2d poseWorldRobot;
 
   public ChaseCoralCommand(Swerve swerve, PhotonVisionSubsystem vision) {
     this.swerve = swerve;
@@ -50,54 +55,67 @@ public class ChaseCoralCommand extends Command {
     turnController.setP(ChaseCoralCommandParamsNT.turnKp.getValue());
     turnController.setI(ChaseCoralCommandParamsNT.turnKi.getValue());
     turnController.setD(ChaseCoralCommandParamsNT.turnKd.getValue());
+    turnController.enableContinuousInput(0, Math.PI * 2.0);
 
     driveController.reset();
     turnController.reset();
-    chaseTarget = Pair.of(0.0, 0.0);
     state = State.ACTIVE_CHASING;
   }
 
   @Override
   public void execute() {
     // handle state transition
-    if (vision.hasAnyTargets())
+    RobotStateRecorder.getNearestCoral().ifPresentOrElse(info -> {
       state = State.ACTIVE_CHASING;
-    else
+      this.info = info;
+    }, () -> {
       state = State.BLIND_CHASING;
+    });
 
     // get
-    Rotation2d currentAngle = swerve.getEstimatedPose().getRotation().toRotation2d();
+    poseWorldRobot = RobotStateRecorder.getPoseWorldRobotCurrent().toPose2d();
 
     // run state
     switch (state) {
       case ACTIVE_CHASING -> {
         Logging.info("Commands/ChaseCoralCommand", "Active Chasing!");
-        PhotonVisionSubsystem.RawDetection detection = vision.getLargestTarget();
+        Translation2d vecRobotTarget = info.translation.minus(poseWorldRobot.getTranslation());
+        prevDirection = vecRobotTarget.getAngle();
 
-        double forwardVel = -driveController.calculate(detection.pitch(),
-            ChaseCoralCommandParamsNT.chasePitchSetpoint.getValue());
-        forwardVel = MathUtil.clamp(forwardVel, 0.0, ChaseCoralCommandParamsNT.activeChaseMaxVelocityMps.getValue());
+        forwardVel = -driveController.calculate(
+            vecRobotTarget.getNorm(),
+            0.0
+        );
+        forwardVel = MathUtil.clamp(
+            forwardVel,
+            0.0, ChaseCoralCommandParamsNT.activeChaseMaxVelocityMps.getValue()
+        );
 
-        double angVel = turnController.calculate(
-            detection.yaw(),
-            ChaseCoralCommandParamsNT.chaseYawSetpoint.getValue());
-
-        chaseTarget = Pair.of(forwardVel, angVel);
+        turnVel = turnController.calculate(
+            poseWorldRobot.getRotation().getRadians(),
+            prevDirection.getRadians()
+        );
       }
+
       case BLIND_CHASING -> {
         Logging.info("Commands/ChaseCoralCommand", "Blind Chasing!");
-        chaseTarget = Pair.of(
-            MathUtil.clamp(chaseTarget.getFirst(), 0.0, ChaseCoralCommandParamsNT.blindChaseMaxVelocityMps.getValue()),
-            0.0);
+        forwardVel = MathUtil.clamp(
+            forwardVel, 0.0, ChaseCoralCommandParamsNT.blindChaseMaxVelocityMps.getValue()
+        );
+        turnVel = 0.0;
       }
     }
 
     // run target
-    swerve.runTwist(new ChassisSpeeds(chaseTarget.getFirst(), 0.0, chaseTarget.getSecond()));
-
-    // logging
-    Logger.recordOutput("Commands/ChaseCoralCommand/Linvel", chaseTarget.getFirst());
-    Logger.recordOutput("Commands/ChaseCoralCommand/AngCurrent", currentAngle.getRadians());
+    Translation2d velWorld = new Translation2d(forwardVel, prevDirection);
+    swerve.runTwist(
+        ChassisSpeeds.fromFieldRelativeSpeeds(
+            velWorld.getX(),
+            velWorld.getY(),
+            turnVel,
+            poseWorldRobot.getRotation()
+        )
+    );
 
   }
 
@@ -117,16 +135,13 @@ public class ChaseCoralCommand extends Command {
 
   @NTParameter(tableName = "Params/Commands/ChaseCoralCommand")
   public static class ChaseCoralCommandParams {
-    static final double driveKp = 0.5;
+    static final double driveKp = 3.5;
     static final double driveKi = 0.0;
-    static final double driveKd = 0.0;
+    static final double driveKd = 0.1;
 
-    static final double turnKp = 0.5;
+    static final double turnKp = 4.0;
     static final double turnKi = 0.0;
-    static final double turnKd = 0.0;
-
-    static final double chasePitchSetpoint = -14.0;
-    static final double chaseYawSetpoint = 0.0;
+    static final double turnKd = 0.3;
 
     static final double activeChaseMaxVelocityMps = 2.0;
     static final double blindChaseMaxTimeSeconds = 0.5;
