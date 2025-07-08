@@ -20,10 +20,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.CoralIntakeAssistCommand;
-import frc.robot.commands.aimSequences.*;
+import frc.robot.commands.aimSequences.AimGoalSupplier;
+import frc.robot.commands.aimSequences.NetAimCommand;
+import frc.robot.commands.aimSequences.ReefAimCommand;
+import frc.robot.commands.aimSequences.SuperCycleCommand;
 import frc.robot.subsystems.beambreak.BeambreakIOReal;
 import frc.robot.subsystems.beambreak.BeambreakIOSim;
-import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOReal;
 import frc.robot.subsystems.climber.ClimberIOSim;
 import frc.robot.subsystems.climber.ClimberSubsystem;
@@ -262,14 +264,14 @@ public class RobotContainer {
         );
 
     driverController.b().whileTrue(superstructure.runGoal(() -> SuperstructureState.CORAL_OUTTAKE));
-   driverController.x().whileTrue(
-       Commands.runOnce(() -> {
-             destinationSupplier.setCurrentGamePiece(DestinationSupplier.GamePiece.CORAL_SCORING);
-           })
-           .andThen(
-               new ReefAimCommand(swerve, indicatorSubsystem)
-           )
-   );
+//    driverController.x().whileTrue(
+//        Commands.runOnce(() -> {
+//              destinationSupplier.setCurrentGamePiece(DestinationSupplier.GamePiece.CORAL_SCORING);
+//            })
+//            .andThen(
+//                new ReefAimCommand(swerve, indicatorSubsystem)
+//            )
+//    );
 //    driverController.x().whileTrue(
 //        new ChaseCoralCommand(swerve, photonVisionSubsystem)
 //    );
@@ -281,6 +283,12 @@ public class RobotContainer {
     //         climberSubsystem::hasDeployed
     //     )
     // );
+
+    driverController.x().whileTrue(
+        superstructure.runGoal(() -> SuperstructureState.L4).alongWith(
+            Commands.print("ads")
+        )
+    );
 
     // Y button - Coral intake assist drive
     driverController.y().whileTrue(
@@ -302,18 +310,21 @@ public class RobotContainer {
         .whileTrue(
             new BlocklessEitherCommand(
                 createScoringCommand(false, SuperstructureState.L4),
-                new NetAimCommand(swerve, () -> driverController.getLeftX() * 2.5)
-                    // .alongWith(
-                    //     superstructure.runGoal(() -> SuperstructureState.NET_SCORE)
-                    //         .until(driverController.y())
-                    //         .andThen(
-                    //             superstructure
-                    //                 .runGoal(() -> SuperstructureState.NET_SCORE_EJECT)
-                    //                 .until(() -> !superstructure.hasAlgae())
-                    //         )
-                    //         .onlyIf(superstructure::hasAlgae)
-                    // ),
-                    ,
+                new NetAimCommand(swerve, () -> driverController.getLeftX() * 3.0)
+                    .alongWith(
+                        Commands.waitUntil(() -> {
+                              Pose2d poseWorldRobot = RobotStateRecorder.getPoseWorldRobotCurrent().toPose2d();
+                              return AimGoalSupplier.isNearNet(poseWorldRobot);
+                            }).andThen(
+                                superstructure.runGoal(() -> SuperstructureState.NET_SCORE).until(driverController.y())
+                                    .andThen(
+                                        superstructure
+                                            .runGoal(() -> SuperstructureState.NET_SCORE_EJECT)
+                                            .until(() -> !superstructure.hasAlgae())
+                                    )
+                            )
+                            .onlyIf(superstructure::hasAlgae)
+                    ),
                 superstructure::hasCoral)
         );
     driverController
