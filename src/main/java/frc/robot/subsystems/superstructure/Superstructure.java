@@ -134,9 +134,9 @@ public class Superstructure extends SubsystemBase {
                     if (intake.isIndexRollerHasCoral()) {
                         return SuperstructureState.CORAL_GROUND_INTAKE;
                     }
-                    
+
                     return SuperstructureState.IDLE;
-             
+
                 })
         );
     }
@@ -514,7 +514,7 @@ public class Superstructure extends SubsystemBase {
                             runSuperstructureRollers(to)
                     )
                     .andThen(Commands.waitUntil(this::poseAtGoal));
-        
+
         }
         if (to == SuperstructureState.L4){
             return runElevator(to.getValue().getPose().elevatorHeight())
@@ -543,13 +543,24 @@ public class Superstructure extends SubsystemBase {
             } else if (statesAboveFlip.contains(from)) {
                 return runSuperstructurePose(to.getValue().getPose())
                         .andThen(Commands.waitUntil(endEffectorArm::isAtGoal));
-            } else {
-                //TODO:check this 
-                return runSuperstructurePose(to.getValue().getPose())
-                        .andThen(Commands.waitUntil(elevator::isSafeToFlip));
+            } else if (statesBelowNoFlip.contains(from)) {
+                // WIP: flyby
+                return Commands.either(
+                    // fly-by case: set elevator directly to goal
+                    runElevator(goal.getValue().getPose().elevatorHeight())
+                        .alongWith(
+                            runEndEffectorArm(to.getValue().getPose().endEffectorAngle()),
+                            runIntake(to.getValue().getPose().intakeAngle())
+                        ),
+                    // usual case: move superstructure then wait until it’s safe to flip
+                    runSuperstructurePose(to.getValue().getPose())
+                        .andThen(Commands.waitUntil(elevator::isSafeToFlip)),
+                    // only flyby when we go from BNF -> AF
+                    () -> statesAboveFlip.contains(goal)
+                );
             }
         }
         return runSuperstructurePose(to.getValue().getPose())
                 .andThen(Commands.waitUntil(this::poseAtGoal).andThen(runSuperstructureRollers(to)));
     }
-} 
+}

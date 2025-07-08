@@ -264,14 +264,14 @@ public class RobotContainer {
         );
 
     driverController.b().whileTrue(superstructure.runGoal(() -> SuperstructureState.CORAL_OUTTAKE));
-    driverController.x().whileTrue(
-        Commands.runOnce(() -> {
-              destinationSupplier.setCurrentGamePiece(DestinationSupplier.GamePiece.CORAL_SCORING);
-            })
-            .andThen(
-                new ReefAimCommand(swerve, indicatorSubsystem)
-            )
-    );
+//    driverController.x().whileTrue(
+//        Commands.runOnce(() -> {
+//              destinationSupplier.setCurrentGamePiece(DestinationSupplier.GamePiece.CORAL_SCORING);
+//            })
+//            .andThen(
+//                new ReefAimCommand(swerve, indicatorSubsystem)
+//            )
+//    );
 //    driverController.x().whileTrue(
 //        new ChaseCoralCommand(swerve, photonVisionSubsystem)
 //    );
@@ -283,6 +283,12 @@ public class RobotContainer {
     //         climberSubsystem::hasDeployed
     //     )
     // );
+
+    driverController.x().whileTrue(
+        superstructure.runGoal(() -> SuperstructureState.L4).alongWith(
+            Commands.print("ads")
+        )
+    );
 
     // Y button - Coral intake assist drive
     driverController.y().whileTrue(
