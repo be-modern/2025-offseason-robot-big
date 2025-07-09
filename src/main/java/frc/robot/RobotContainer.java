@@ -430,20 +430,17 @@ public class RobotContainer {
         // If no coral, check if intake button (right stick) is pressed
         new BlocklessEitherCommand(
             // If intake button is pressed, run reef aim command then supercycle when coral is intaken
-            Commands.sequence(
-                Commands.runOnce(() -> {
-                  destinationSupplier.updateBranch(isRightBranch);
-                }),
-                Commands.runOnce(() -> {
-                  destinationSupplier.setStateSetPoint(state);
-                }),
-                Commands.runOnce(() -> {
-                  destinationSupplier.setCurrentGamePiece(DestinationSupplier.GamePiece.CORAL_SCORING);
-                }),
-                new ReefAimCommand(swerve, indicatorSubsystem),
-                Commands.waitUntil(() -> superstructure.hasCoral()),
-                new SuperCycleCommand(swerve, superstructure, indicatorSubsystem)
-            ),
+            Commands.runOnce(() -> {
+              destinationSupplier.updateBranch(isRightBranch);
+              destinationSupplier.setStateSetPoint(state);
+              destinationSupplier.setCurrentGamePiece(DestinationSupplier.GamePiece.CORAL_SCORING);
+            }).andThen(
+              Commands.parallel(
+                superstructure.runGoal(() -> SuperstructureState.CORAL_GROUND_INTAKE),
+                new ReefAimCommand(swerve, indicatorSubsystem)
+              ).until(superstructure::hasCoral)
+            )
+            .andThen(new SuperCycleCommand(swerve, superstructure, indicatorSubsystem)),
             // If intake button is not pressed, do nothing
             Commands.none(),
             ()-> superstructure.getState() == SuperstructureState.CORAL_GROUND_INTAKE

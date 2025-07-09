@@ -173,7 +173,7 @@ public class CoralIntakeAssistCommand extends Command {
         // Only assist if robot is moving
         Translation2d robotWorldVelocityVector = robotWorldVelocity.getTranslation();
         double robotSpeed = robotWorldVelocityVector.getNorm();
-        if (robotSpeed < CoralIntakeAssistParams.minRobotSpeed) {
+        if (robotSpeed < CoralIntakeAssistParamsNT.minRobotSpeed.getValue()) {
             Logger.recordOutput("CoralIntakeAssist/IsActive", false);
             Logger.recordOutput("CoralIntakeAssist/Reason", "Robot not moving");
             Logger.recordOutput("CoralIntakeAssist/RobotSpeed", robotSpeed);
@@ -186,7 +186,7 @@ public class CoralIntakeAssistCommand extends Command {
                            robotWorldVelocityVector.getY() * robotToCoralVector.getY();
         
         // Calculate angle threshold check: cos(maxAngle) * |velocity| * |robotToCoral|
-        double requiredDotProduct = Math.cos(Math.toRadians(CoralIntakeAssistParams.maxAngleTowardsCoralDegrees)) 
+        double requiredDotProduct = Math.cos(Math.toRadians(CoralIntakeAssistParamsNT.maxAngleTowardsCoralDegrees.getValue())) 
                                    * robotWorldVelocityVector.getNorm() 
                                    * robotToCoralVector.getNorm();
         
@@ -212,7 +212,7 @@ public class CoralIntakeAssistCommand extends Command {
             Logger.recordOutput("CoralIntakeAssist/IsActive", false);
             Logger.recordOutput("CoralIntakeAssist/Reason", "Not moving towards coral within angle threshold");
             System.out.println("CoralIntakeAssist: Not active - Angle to coral: " + actualAngleDegrees + 
-                             "°, Threshold: " + CoralIntakeAssistParams.maxAngleTowardsCoralDegrees + "°");
+                             "°, Threshold: " + CoralIntakeAssistParamsNT.maxAngleTowardsCoralDegrees.getValue() + "°");
             return new Translation2d();
         }
         
@@ -225,11 +225,11 @@ public class CoralIntakeAssistCommand extends Command {
         
         // Apply limits
         double assistX = MathUtil.clamp(assistVelocityWorld.getX(), 
-            -CoralIntakeAssistParams.maxAssistVelocity, 
-            CoralIntakeAssistParams.maxAssistVelocity);
+            -CoralIntakeAssistParamsNT.maxAssistVelocity.getValue(), 
+            CoralIntakeAssistParamsNT.maxAssistVelocity.getValue());
         double assistY = MathUtil.clamp(assistVelocityWorld.getY(), 
-            -CoralIntakeAssistParams.maxAssistVelocity, 
-            CoralIntakeAssistParams.maxAssistVelocity);
+            -CoralIntakeAssistParamsNT.maxAssistVelocity.getValue(), 
+            CoralIntakeAssistParamsNT.maxAssistVelocity.getValue());
         
         Translation2d finalAssistWorld = new Translation2d(assistX, assistY);
         
@@ -271,7 +271,7 @@ public class CoralIntakeAssistCommand extends Command {
         double perpDistance = calculatePerpendicularDistance(robotPosition, robotVelocity, coralPosition);
         
                 // Calculate assist magnitude using proportional control
-        double assistMagnitude = Math.abs(perpDistance) * CoralIntakeAssistParams.assistKp;
+        double assistMagnitude = Math.abs(perpDistance) * CoralIntakeAssistParamsNT.assistKp.getValue();
         
         // Calculate direction perpendicular to robot velocity towards coral
         Translation2d perpDirection = calculatePerpendicularDirection(robotVelocity, robotPosition, coralPosition);
@@ -326,9 +326,9 @@ public class CoralIntakeAssistCommand extends Command {
     
     @NTParameter(tableName = "Params/Commands/CoralIntakeAssist")
     public static class CoralIntakeAssistParams {
-        static final double assistKp = 0.8;                        // Proportional gain for assist velocity
-        static final double maxAssistVelocity = 1.5;               // Maximum assist velocity (m/s)
-        static final double minRobotSpeed = 0.1;                   // Minimum robot speed to activate assist (m/s)              // Maximum yaw angle for coral selection (degrees)
-        static final double maxAngleTowardsCoralDegrees = 45.0;    // Maximum angle to consider "moving towards" coral (degrees)
+        static final double assistKp = 0.4;                        // Proportional gain for assist velocity
+        static final double maxAssistVelocity = 3.0;               // Maximum assist velocity (m/s)
+        static final double minRobotSpeed = 0.2;                   // Minimum robot speed to activate assist (m/s)              // Maximum yaw angle for coral selection (degrees)
+        static final double maxAngleTowardsCoralDegrees = 90.0;    // Maximum angle to consider "moving towards" coral (degrees)
     }
 } 

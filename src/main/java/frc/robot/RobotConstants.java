@@ -331,8 +331,8 @@ public final class RobotConstants {
             kModuleCompFL, kModuleCompFR, kModuleCompBL, kModuleCompBR
         })
         .odometryFrequency(Hertz.of(50))
-        .driveStatorCurrentLimit(Amps.of(110))
-        .steerStatorCurrentLimit(Amps.of(50))
+        .driveStatorCurrentLimit(Amps.of(100))
+        .steerStatorCurrentLimit(Amps.of(40))
         .canivoreCanBusName(CANIVORE_CAN_BUS_NAME)
         .pigeonId(PIGEON_ID)
         .build();
