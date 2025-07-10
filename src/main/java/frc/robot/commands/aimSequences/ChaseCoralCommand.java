@@ -25,7 +25,7 @@ public class ChaseCoralCommand extends Command {
   State state = State.ACTIVE_CHASING;
   private double forwardVel = 0.0;
   private double turnVel = 0.0;
-  private Rotation2d prevDirection;
+  private Rotation2d prevDirection = Rotation2d.kZero;
 
   private CoralRecorder.CoralInfo info = null;
   private Pose2d poseWorldRobot;
@@ -57,6 +57,7 @@ public class ChaseCoralCommand extends Command {
     turnController.setD(ChaseCoralCommandParamsNT.turnKd.getValue());
     turnController.enableContinuousInput(0, Math.PI * 2.0);
 
+    prevDirection = RobotStateRecorder.getPoseDriverRobotCurrent().getRotation().toRotation2d();
     driveController.reset();
     turnController.reset();
     state = State.ACTIVE_CHASING;

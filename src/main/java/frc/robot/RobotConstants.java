@@ -243,7 +243,7 @@ public final class RobotConstants {
         .build();
     public static SwerveLimit kDefaultSwerveLimit = SwerveLimit.builder()
         .maxLinearVelocity(MetersPerSecond.of(4.5))
-        .maxSkidAcceleration(MetersPerSecondPerSecond.of(27.0))
+        .maxSkidAcceleration(MetersPerSecondPerSecond.of(25.0))
         // must be smaller than 4.5 / (dist * sqrt(2)) to be actually effective
         .maxAngularVelocity(DegreesPerSecond.of(450.0))
         // accelerate in 0.2s, also must be smaller than the defined module limit to be actually effective
@@ -330,7 +330,7 @@ public final class RobotConstants {
         .moduleConfigs(new SwerveConfig.SwerveModuleConfig[]{
             kModuleCompFL, kModuleCompFR, kModuleCompBL, kModuleCompBR
         })
-        .odometryFrequency(Hertz.of(50))
+        .odometryFrequency(Hertz.of(100))
         .driveStatorCurrentLimit(Amps.of(100))
         .steerStatorCurrentLimit(Amps.of(40))
         .canivoreCanBusName(CANIVORE_CAN_BUS_NAME)

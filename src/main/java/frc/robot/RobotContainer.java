@@ -19,13 +19,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.auto.AutoActions;
-import frc.robot.auto.AutoRoutines;
 import frc.robot.auto.AutoSelector;
+import frc.robot.auto.routines.AutoRight5C1A;
+import frc.robot.auto.routines.AutoTest;
 import frc.robot.commands.CoralIntakeAssistCommand;
-import frc.robot.commands.aimSequences.AimGoalSupplier;
-import frc.robot.commands.aimSequences.NetAimCommand;
-import frc.robot.commands.aimSequences.ReefAimCommand;
-import frc.robot.commands.aimSequences.SuperCycleCommand;
+import frc.robot.commands.aimSequences.*;
 import frc.robot.subsystems.beambreak.BeambreakIOReal;
 import frc.robot.subsystems.beambreak.BeambreakIOSim;
 import frc.robot.subsystems.climber.ClimberIOReal;
@@ -60,7 +58,6 @@ import lib.ironpulse.rbd.TransformRecorder;
 import lib.ironpulse.swerve.Swerve;
 import lib.ironpulse.swerve.SwerveCommands;
 import lib.ironpulse.swerve.sim.ImuIOSim;
-import lib.ironpulse.swerve.sim.SwerveModuleIOSim;
 import lib.ironpulse.swerve.sim.SwerveModuleIOSimpleSim;
 import lib.ironpulse.swerve.sjtu6.ImuIOPigeon;
 import lib.ironpulse.swerve.sjtu6.SwerveModuleIOSJTU6;
@@ -200,21 +197,11 @@ public class RobotContainer {
 
 
     // init auto actions
-    AutoActions.init(swerve, superstructure, indicatorSubsystem);
-    AutoSelector.getInstance().registerAuto(
-        "TestAuto", AutoRoutines.testAuto()
-    );
+    AutoActions.init(swerve, superstructure, indicatorSubsystem, photonVisionSubsystem);
+    AutoSelector.getInstance().registerAuto("TestAuto", new AutoTest());
+    AutoSelector.getInstance().registerAuto("Right 5C1A", new AutoRight5C1A());
 
-    // autoChooser = new LoggedDashboardChooser<>("Chooser",
-    // CustomAutoChooser.buildAutoChooser("New Auto"));
-    // autoActions = new AutoActions(indicatorSubsystem, elevatorSubsystem,
-    // endEffectorArmSubsystem, intakeSubsystem);
-    // autoFile = new AutoFile(autoActions);
 
-    // CommandScheduler.getInstance().unregisterAllSubsystems();
-    // CommandScheduler.getInstance().registerSubsystem(
-    // climberSubsystem, swerve
-    // );
     CommandScheduler.getInstance().unregisterSubsystem(climberSubsystem);
 
     configureDriverBindings();
@@ -263,9 +250,9 @@ public class RobotContainer {
     // new ReefAimCommand(swerve, indicatorSubsystem)
     // )
     // );
-//     driverController.x().whileTrue(
-//     new ChaseCoralCommand(swerve, photonVisionSubsystem)
-//     );
+     driverController.x().whileTrue(
+      new ChaseCoralCommand(swerve, photonVisionSubsystem)
+     );
 
 //    driverController.x().whileTrue(
 //      Commands.either(

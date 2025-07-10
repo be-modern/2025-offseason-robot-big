@@ -12,7 +12,7 @@ public class MathTools {
     /**
      * Default tolerance for floating-point comparisons.
      */
-    public static double TOLERANCE = 1e-8;
+    public static double TOLERANCE = 1e-5;
 
     /**
      * Normalize a vector safely, returning the original if its magnitude is below tolerance.

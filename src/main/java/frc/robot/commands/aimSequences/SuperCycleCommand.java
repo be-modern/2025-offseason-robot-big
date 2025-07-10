@@ -21,13 +21,17 @@ public class SuperCycleCommand extends SequentialCommandGroup {
     private final Superstructure superstructure;
     private final IndicatorSubsystem indicatorSubsystem;
 
+    private final boolean takingAlgae;
+
     public SuperCycleCommand(
             Swerve swerve,
             Superstructure superstructure,
-            IndicatorSubsystem indicatorSubsystem) {
+            IndicatorSubsystem indicatorSubsystem,
+            boolean takingAlgae) {
         this.swerve = swerve;
         this.indicatorSubsystem = indicatorSubsystem;
         this.superstructure = superstructure;
+        this.takingAlgae = takingAlgae;
 
         addRequirements(superstructure);
 
@@ -44,7 +48,13 @@ public class SuperCycleCommand extends SequentialCommandGroup {
                                                 .getShootState())
                                 .until(() -> !superstructure.hasCoral()),
                         // take algae
-                        takeAlgae()));
+                        takeAlgae().onlyIf(() -> this.takingAlgae)));
+    }
+
+    public SuperCycleCommand( Swerve swerve,
+                              Superstructure superstructure,
+                              IndicatorSubsystem indicatorSubsystem) {
+        this(swerve, superstructure, indicatorSubsystem, false);
     }
 
     // whenever the right trigger is pressed, the preShootCoral Command will end and

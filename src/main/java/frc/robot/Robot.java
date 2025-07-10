@@ -89,18 +89,14 @@ public class Robot extends LoggedRobot {
   @Override
   public void autonomousInit() {
     try {
-      //todo: add autonomous command
       autonomousCommand = AutoSelector.getInstance().getAutoCommand();
-//      autonomousCommand = Commands.none();
     } catch (Exception e) {
       System.out.println("Autonomous command failed: " + e);
       e.printStackTrace();
       autonomousCommand = null;
     }
 
-    if (autonomousCommand != null) {
-      autonomousCommand.schedule();
-    }
+    if (autonomousCommand != null) autonomousCommand.schedule();
   }
 
   @Override

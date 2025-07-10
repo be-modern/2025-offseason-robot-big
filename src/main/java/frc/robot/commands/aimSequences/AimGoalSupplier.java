@@ -7,6 +7,8 @@ import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.Reef;
 import frc.robot.RobotConstants;
 import lib.ntext.NTParameter;
+import lombok.Getter;
+import lombok.Setter;
 import org.littletonrobotics.AllianceFlipUtil;
 import org.littletonrobotics.junction.Logger;
 
@@ -15,6 +17,10 @@ import java.util.List;
 import static lib.ironpulse.math.MathTools.epsilonEquals;
 
 public class AimGoalSupplier {
+  @Getter
+  @Setter
+  private static ReefFace selectedTarget = ReefFace.NearFlat;
+
   /**
    * Calculates the optimal drive target position based on the robot's current position and goal position
    *
@@ -97,6 +103,12 @@ public class AimGoalSupplier {
    */
   public static Pose2d getNearestTag(Pose2d robotPose) {
     return FieldConstants.aprilTagType.getLayout().getTagPose(getNearestTagID(robotPose)).get().toPose2d();
+  }
+
+  public static Pose2d getSelectedTag() {
+    return FieldConstants.aprilTagType.getLayout().getTagPose(
+        AllianceFlipUtil.shouldFlip() ? selectedTarget.redId : selectedTarget.blueId
+    ).get().toPose2d();
   }
 
   public static boolean isInReefDangerZone(Pose2d robotPose) {
@@ -319,6 +331,23 @@ public class AimGoalSupplier {
       Logger.recordOutput("EdgeCase/IsEdgeCase", false);
     }
     Logger.recordOutput("EdgeCase/TargetChanged", minDistanceID == secondMinDistanceID);
+  }
+
+  // note: all assume blue driver station, origin at right side
+  public enum ReefFace {
+    FarFlat(10, 21),
+    NearFlat(7, 18),
+    FarRightTilt(11, 22),
+    NearRightTilt(6, 17),
+    FarLeftTilt(8, 20),
+    NearLeftTilt(9, 19);
+
+    ReefFace(int redId, int blueId) {
+      this.redId = redId;
+      this.blueId = blueId;
+    }
+    public int redId;
+    public int blueId;
   }
 
   @NTParameter(tableName = "Params/AimParams")

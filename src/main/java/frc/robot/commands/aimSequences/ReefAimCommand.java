@@ -13,14 +13,17 @@ import frc.robot.RobotStateRecorder;
 import frc.robot.subsystems.indicator.IndicatorIO;
 import frc.robot.subsystems.indicator.IndicatorSubsystem;
 import frc.robot.subsystems.superstructure.DestinationSupplier;
+import lib.ironpulse.math.MathTools;
 import lib.ironpulse.swerve.Swerve;
 import lib.ironpulse.swerve.SwerveLimit;
 import lib.ironpulse.utils.Logging;
 import lib.ntext.NTParameter;
 import org.littletonrobotics.junction.Logger;
 
+import static edu.wpi.first.math.util.Units.degreesToRadians;
 import static edu.wpi.first.units.Units.*;
 import static lib.ironpulse.math.MathTools.epsilonEquals;
+import static lib.ironpulse.math.MathTools.unwrapAngle;
 
 public class ReefAimCommand extends Command {
   private final static String kTag = "Commands/ReefAimCommand";
@@ -35,8 +38,9 @@ public class ReefAimCommand extends Command {
   private PIDController translationController;
   private PIDController rotationController;
 
+  private final boolean useSelectedTarget;
 
-  public ReefAimCommand(Swerve swerve, IndicatorSubsystem indicatorSubsystem) {
+  public ReefAimCommand(Swerve swerve, IndicatorSubsystem indicatorSubsystem, boolean useSelectedTarget) {
     this.indicatorSubsystem = indicatorSubsystem;
     this.swerve = swerve;
 
@@ -51,6 +55,12 @@ public class ReefAimCommand extends Command {
         ReefAimCommandParamsNT.rotationKd.getValue()
     );
     addRequirements(swerve);
+
+    this.useSelectedTarget = useSelectedTarget;
+  }
+
+  public ReefAimCommand(Swerve swerve, IndicatorSubsystem indicatorSubsystem) {
+    this(swerve, indicatorSubsystem, false);
   }
 
   @Override
@@ -81,7 +91,7 @@ public class ReefAimCommand extends Command {
     velocityRobot = RobotStateRecorder.getVelocityWorldRobotCurrent();
 
     // calculate destination
-    tagPose = AimGoalSupplier.getNearestTag(poseWorldRobot);
+    tagPose = useSelectedTarget ? AimGoalSupplier.getSelectedTag() : AimGoalSupplier.getNearestTag(poseWorldRobot);
 
     // choose target based on game piece
     if (DestinationSupplier.getInstance().getCurrentGamePiece() == DestinationSupplier.GamePiece.ALGAE_INTAKING) {
@@ -111,7 +121,7 @@ public class ReefAimCommand extends Command {
     // compute translation error, tu
     Translation2d pRT = poseRobotTarget.getTranslation();
     double pRT_norm = pRT.getNorm();
-    Rotation2d pRT_dir = pRT.getAngle();
+    Rotation2d pRT_dir = MathTools.toAngle(pRT);
     // NOTE: as pRT_norm is always positive, then vRT_norm is always negative.
     // to make the robot move along but not opposite to pRT_dir, we take the minus sign before vRT_norm
     double vRT_norm = -translationController.calculate(pRT_norm, 0.0);
@@ -119,9 +129,9 @@ public class ReefAimCommand extends Command {
     // compute rotation err, turn into angular velocity scalar
     double thetaRTOriginal = poseRobotTarget.getRotation().getRadians();
     double thetaRTAdjusted = poseRobotTarget.getTranslation().getAngle().getRadians();
-    double maxThetaAdjustment = ReefAimCommandParamsNT.rotationAdjustmentMaxDegree.getValue();
+    double maxThetaAdjustment = degreesToRadians(ReefAimCommandParamsNT.rotationAdjustmentMaxDegree.getValue());
     thetaRTAdjusted = MathUtil.clamp(thetaRTAdjusted, thetaRTOriginal - maxThetaAdjustment, thetaRTOriginal + maxThetaAdjustment);
-    double omegaRT = -rotationController.calculate(thetaRTOriginal, 0.0);
+    double omegaRT = -rotationController.calculate(thetaRTAdjusted, 0.0);
 
     // set limit
     double dCurr = finalDestinationPose.relativeTo(poseWorldRobot).getTranslation().getNorm(); // use final destination
@@ -203,7 +213,7 @@ public class ReefAimCommand extends Command {
     static final double translationVelocityMaxFar = 4.6;
     static final double translationVelocityMaxNear = 3.5;
     static final double translationParamsChangeDistance = 2.0;
-    static final double translationAccelerationMax = 27.0;
+    static final double translationAccelerationMax = 14.0;
 
     static final double rotationKp = 4.5;
     static final double rotationKi = 0.0;
@@ -216,6 +226,6 @@ public class ReefAimCommand extends Command {
     static final double translationOnTargetVelocityMetersPerSecond = 0.25;
     static final double rotationOnTargetToleranceDegree = 1.0;
     static final double rotationOnTargetVelocityToleranceDegreesPerSecond = 12.0;
-    static final double rotationAdjustmentMaxDegree = 5.0;
+    static final double rotationAdjustmentMaxDegree = 0.0;
   }
 }

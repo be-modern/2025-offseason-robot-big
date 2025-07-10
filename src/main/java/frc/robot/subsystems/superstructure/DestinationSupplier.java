@@ -25,9 +25,6 @@ public class DestinationSupplier {
     Swerve swerve;
     @Getter
     private controlMode currentControlMode = controlMode.AUTO;
-    @Getter
-    @Setter
-    private int targetTagID = 0;
     private boolean coralRight = false;
     private boolean useProcessor = false;
     @Getter
