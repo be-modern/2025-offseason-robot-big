@@ -282,25 +282,27 @@ public class RobotContainer {
         .leftBumper()
         .whileTrue(
             new BlocklessEitherCommand(
+              // algae
+              Commands.parallel(
+                new NetAimCommand(swerve, () -> driverController.getLeftX() * 4.5),
+                Commands.waitUntil(() -> {
+                  Pose2d poseWorldRobot = RobotStateRecorder.getPoseWorldRobotCurrent().toPose2d();
+                  return AimGoalSupplier.isNearNet(poseWorldRobot);
+                }).andThen(
+                    superstructure.runGoal(() -> SuperstructureState.NET_SCORE).until(superstructure::poseAtGoal)
+                ).andThen(
+                  Commands.waitUntil(() -> {
+                    return RobotStateRecorder.getVelocityWorldRobotCurrent().getTranslation().getNorm() < 0.20;
+                  })
+                )
+              )
+              .andThen(
+                superstructure
+                    .runGoal(() -> SuperstructureState.NET_SCORE_EJECT)
+                    .until(() -> !superstructure.hasAlgae())),
                 // coral
                 createScoringCommand(false, SuperstructureState.L4),
-
-                // algae
-                Commands.parallel(
-                        new NetAimCommand(swerve, () -> driverController.getLeftX() * 4.5),
-                        Commands.waitUntil(() -> {
-                          Pose2d poseWorldRobot = RobotStateRecorder.getPoseWorldRobotCurrent().toPose2d();
-                          return AimGoalSupplier.isNearNet(poseWorldRobot);
-                        }).andThen(
-                            superstructure.runGoal(() -> SuperstructureState.NET_SCORE).until(superstructure::poseAtGoal)
-                        )
-                    )
-                    .andThen(
-                        superstructure
-                            .runGoal(() -> SuperstructureState.NET_SCORE_EJECT)
-                            .until(() -> !superstructure.hasAlgae()))
-                    .onlyIf(superstructure::hasAlgae),
-                superstructure::hasCoral));
+                superstructure::hasAlgae));
     driverController
         .leftTrigger()
         .whileTrue(

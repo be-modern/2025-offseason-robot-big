@@ -134,7 +134,8 @@ public class CoralIntakeAssistCommand extends Command {
         
         // Logging
         Logger.recordOutput("CoralIntakeAssist/BaseSpeed",  baseChassisSpeeds);
-        Logger.recordOutput("CoralIntakeAssist", finalChassisSpeeds);
+        Logger.recordOutput("CoralIntakeAssist/finalSpeed", finalChassisSpeeds);
+        Logger.recordOutput("CoralIntakeAssist/AssistVel", assistVelocity);
     }
     
     @Override
@@ -149,6 +150,7 @@ public class CoralIntakeAssistCommand extends Command {
     }
     
     /**
+     * 
      * Calculates coral assist velocity to add to base driver input
      * Uses CoralRecorder to get the most aligned coral target and calculates assist in world frame
      * @param baseChassisSpeeds The chassis speeds from driver input
@@ -162,8 +164,6 @@ public class CoralIntakeAssistCommand extends Command {
         // Get the most aligned coral from CoralRecorder
         Optional<CoralRecorder.CoralInfo> mostAlignedCoralOpt = getMostAlignedCoral(robotWorldPose);
         if (mostAlignedCoralOpt.isEmpty()) {
-            Logger.recordOutput("CoralIntakeAssist/IsActive", false);
-            Logger.recordOutput("CoralIntakeAssist/Reason", "No aligned coral target");
             return new Translation2d();
         }
         
@@ -204,18 +204,15 @@ public class CoralIntakeAssistCommand extends Command {
         
         // Detailed logging for debugging
         Logger.recordOutput("CoralIntakeAssist/CoralWorldPosition", coralWorldPosition);
-        Logger.recordOutput("CoralIntakeAssist/DotProduct", dotProduct);
-        Logger.recordOutput("CoralIntakeAssist/RequiredDotProduct", requiredDotProduct);
-        Logger.recordOutput("CoralIntakeAssist/MovingTowardsCoral", movingTowardsCoral);
+        
         
         if (!movingTowardsCoral) {
             Logger.recordOutput("CoralIntakeAssist/IsActive", false);
-            Logger.recordOutput("CoralIntakeAssist/Reason", "Not moving towards coral within angle threshold");
-            System.out.println("CoralIntakeAssist: Not active - Angle to coral: " + actualAngleDegrees + 
-                             "°, Threshold: " + CoralIntakeAssistParamsNT.maxAngleTowardsCoralDegrees.getValue() + "°");
             return new Translation2d();
         }
         
+        Logger.recordOutput("CoralIntakeAssist/robotWorldPose", robotWorldPose);
+        Logger.recordOutput("CoralIntakeAssist/robotWorldVelocity", robotWorldVelocityVector);
         // Calculate assist velocity in world frame
         Translation2d assistVelocityWorld = calculateAssistVelocityWorld(
             robotWorldPose.getTranslation(), 

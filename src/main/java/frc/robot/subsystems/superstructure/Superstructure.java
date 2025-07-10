@@ -12,6 +12,7 @@ import frc.robot.commands.aimSequences.AimGoalSupplier;
 import frc.robot.subsystems.superstructure.elevator.ElevatorSubsystem;
 import frc.robot.subsystems.superstructure.endeffectorarm.EndEffectorArmSubsystem;
 import frc.robot.subsystems.superstructure.intake.IntakeSubsystem;
+import frc.robot.utils.BlocklessEitherCommand;
 import frc.robot.utils.LoggedTracer;
 import lib.ironpulse.utils.TimeDelayedBoolean;
 import lombok.Builder;
@@ -22,7 +23,9 @@ import org.jgrapht.graph.DefaultEdge;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
+import static frc.robot.RobotConstants.ElevatorConstants.FLYBY_HEIGHT;
 import static frc.robot.subsystems.superstructure.SuperstructureState.L4;
+import static frc.robot.subsystems.superstructure.SuperstructureState.NET_SCORE;
 
 import java.util.*;
 import java.util.function.DoubleSupplier;
@@ -508,6 +511,39 @@ public class Superstructure extends SubsystemBase {
                             Commands.waitUntil(() -> !elevator.isZeroing())
                     );
         }
+        // is safe to flip inorder to produce a smoother elevator motion
+        if (to == SuperstructureState.AVOID) {
+            if (statesBelowFlip.contains(from)) {
+                return runElevator(to.getValue().getPose().elevatorHeight())
+                        .andThen(
+                                Commands.waitUntil(elevator::isAtGoal),
+                                runEndEffectorArm(to.getValue().getPose().endEffectorAngle()),
+                                runIntake(to.getValue().getPose().intakeAngle()),
+                                Commands.waitUntil(this::poseAtGoal)
+                        );
+            } else if (statesAboveFlip.contains(from)) {
+                return runSuperstructurePose(to.getValue().getPose())
+                        .andThen(Commands.waitUntil(endEffectorArm::isAtGoal));
+            } else if (statesBelowNoFlip.contains(from)) {
+                System.out.println(goal.getValue().getPose().elevatorHeight() + "" + goal.getValue().getPose().endEffectorAngle());
+                // WIP: flyby
+                return Commands.either(
+                        // fly-by case: set elevator directly to goal
+                        runElevator(() -> FLYBY_HEIGHT.get())
+                                .alongWith(
+                                        runEndEffectorArm(to.getValue().getPose().endEffectorAngle()),
+                                        runIntake(to.getValue().getPose().intakeAngle())
+                                )
+                                .andThen(Commands.waitUntil(elevator::isSafeToFlip)),
+                        // usual case: move superstructure then wait until it’s safe to flip
+                        runSuperstructurePose(to.getValue().getPose())
+                                .andThen(Commands.waitUntil(elevator::isAtGoal)),
+                        // only flyby when we go from BNF -> AF
+                        () -> goal.equals(L4) || goal.equals(NET_SCORE)
+                );
+            }
+
+        }
         if (from == SuperstructureState.CORAL_GROUND_INTAKE || from == SuperstructureState.CORAL_OUTTAKE) {
             return runSuperstructurePose(to.getValue().getPose())
                     .alongWith(runSuperstructureRollers(to))
@@ -527,27 +563,6 @@ public class Superstructure extends SubsystemBase {
                                 runSuperstructurePose(to.getValue().getPose()),
                                 Commands.waitUntil(this::poseAtGoal),
                                 runSuperstructureRollers(to));
-        }
-        // is safe to flip inorder to produce a smoother elevator motion
-        if (to == SuperstructureState.AVOID) {
-            if (statesBelowFlip.contains(from)) {
-                return runElevator(to.getValue().getPose().elevatorHeight())
-                        .andThen(
-                                Commands.waitUntil(elevator::isAtGoal),
-                                runEndEffectorArm(to.getValue().getPose().endEffectorAngle()),
-                                runIntake(to.getValue().getPose().intakeAngle()),
-                                Commands.waitUntil(this::poseAtGoal)
-                        );
-            } else if (statesAboveFlip.contains(from)) {
-                return runSuperstructurePose(to.getValue().getPose())
-                        .andThen(Commands.waitUntil(endEffectorArm::isAtGoal));
-            } else if (statesBelowNoFlip.contains(from)) {
-                // WIP: flyby
-                return 
-                    runSuperstructurePose(to.getValue().getPose())
-                        .andThen(Commands.waitUntil(elevator::isAtGoal));
-            }
-            
         }
         return runSuperstructurePose(to.getValue().getPose())
                 .andThen(Commands.waitUntil(this::poseAtGoal).andThen(runSuperstructureRollers(to)));
