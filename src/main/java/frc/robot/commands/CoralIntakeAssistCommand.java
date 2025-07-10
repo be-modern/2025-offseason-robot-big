@@ -168,30 +168,23 @@ public class CoralIntakeAssistCommand extends Command {
         Translation2d driverVelocityRobotFrame = new Translation2d(baseChassisSpeeds.vxMetersPerSecond, baseChassisSpeeds.vyMetersPerSecond);
         Translation2d driverVelocityWorldFrame = driverVelocityRobotFrame.rotateBy(robotPose.getRotation());
         
-        // Check if coral is available
-        Optional<CoralRecorder.CoralInfo> coralOpt = getMostAlignedCoral(robotPose);
-        if (coralOpt.isEmpty()) {
-            logInactiveAssist("No coral detected", 0.0);
-            return new Translation2d();
-        }
-        
-        Translation2d coralPosition = coralOpt.get().getTranslation();
-        
-        // Check minimum speed requirement
+        // Check minimum speed requirement first
         double driverSpeed = driverVelocityWorldFrame.getNorm();
         if (driverSpeed < CoralIntakeAssistParamsNT.minRobotSpeed.getValue()) {
             logInactiveAssist("Driver speed too low", driverSpeed);
             return new Translation2d();
         }
         
-        // Check if moving toward coral within angle threshold
-        Translation2d robotToCoral = coralPosition.minus(robotPose.getTranslation());
-        double angleToCoralDegrees = calculateAngleBetweenVectors(driverVelocityWorldFrame, robotToCoral);
-        
-        if (angleToCoralDegrees > CoralIntakeAssistParamsNT.maxAngleTowardsCoralDegrees.getValue()) {
-            logInactiveAssist("Not moving towards coral (angle: " + String.format("%.1f", angleToCoralDegrees) + "°)", driverSpeed);
+        // Get nearest coral within driving direction cone
+        Optional<CoralRecorder.CoralInfo> coralOpt = getNearestCoralInDrivingDirection(robotPose, driverVelocityWorldFrame);
+        if (coralOpt.isEmpty()) {
+            logInactiveAssist("No coral in driving direction", driverSpeed);
             return new Translation2d();
         }
+        
+        Translation2d coralPosition = coralOpt.get().getTranslation();
+        Translation2d robotToCoral = coralPosition.minus(robotPose.getTranslation());
+        double angleToCoralDegrees = calculateAngleBetweenVectors(driverVelocityWorldFrame, robotToCoral);
         
         // Calculate and apply assist
         Translation2d assistWorldFrame = calculateAssistVelocityWorld(robotPose.getTranslation(), driverVelocityWorldFrame, coralPosition);
@@ -244,6 +237,7 @@ public class CoralIntakeAssistCommand extends Command {
     private void logActiveAssist(Pose2d robotPose, Translation2d driverVelocity, Translation2d coralPosition, 
                                 Translation2d robotToCoral, double angleToCoralDegrees, double driverSpeed,
                                 Translation2d assistWorldFrame, Translation2d assistRobotFrame) {
+        Logger.recordOutput("CoralIntakeAssist/BestCoral", new Pose2d(coralPosition,Rotation2d.kZero));
         Logger.recordOutput("CoralIntakeAssist/IsActive", true);
         Logger.recordOutput("CoralIntakeAssist/AngleToCoralDegrees", angleToCoralDegrees);
         Logger.recordOutput("CoralIntakeAssist/PerpendicularDistance", 
@@ -252,10 +246,54 @@ public class CoralIntakeAssistCommand extends Command {
     }
 
     /**
-     * Gets the most aligned coral from CoralRecorder.
+     * Gets the nearest coral within the driving direction cone.
+     * This creates a cone in the direction the driver is commanding and finds the nearest coral within it.
      */
-    private Optional<CoralRecorder.CoralInfo> getMostAlignedCoral(Pose2d robotPose) {
-        return RobotStateRecorder.getMostInDirectionCoral();
+    private Optional<CoralRecorder.CoralInfo> getNearestCoralInDrivingDirection(Pose2d robotPose, Translation2d driverVelocityWorldFrame) {
+        if (driverVelocityWorldFrame.getNorm() < 0.01) {
+            return Optional.empty(); // No direction to define cone
+        }
+        
+        // Get all available corals
+        Optional<CoralRecorder.CoralInfo> nearestCoral = RobotStateRecorder.getNearestCoral();
+        Optional<CoralRecorder.CoralInfo> mostAlignedCoral = RobotStateRecorder.getMostInDirectionCoral();
+        
+        // For now, we'll check both corals (if available) and return the nearest one within the cone
+        // This is a simplified implementation - ideally we'd get all corals and filter them
+        
+        double coneAngleDegrees = CoralIntakeAssistParamsNT.maxAngleTowardsCoralDegrees.getValue();
+        Optional<CoralRecorder.CoralInfo> bestCoral = Optional.empty();
+        double nearestDistance = Double.MAX_VALUE;
+        
+        // Check nearest coral
+        if (nearestCoral.isPresent()) {
+            Translation2d robotToCoral = nearestCoral.get().getTranslation().minus(robotPose.getTranslation());
+            double angle = calculateAngleBetweenVectors(driverVelocityWorldFrame, robotToCoral);
+            
+            if (angle <= coneAngleDegrees) {
+                double distance = robotToCoral.getNorm();
+                if (distance < nearestDistance) {
+                    nearestDistance = distance;
+                    bestCoral = nearestCoral;
+                }
+            }
+        }
+        
+        // Check most aligned coral
+        if (mostAlignedCoral.isPresent()) {
+            Translation2d robotToCoral = mostAlignedCoral.get().getTranslation().minus(robotPose.getTranslation());
+            double angle = calculateAngleBetweenVectors(driverVelocityWorldFrame, robotToCoral);
+            
+            if (angle <= coneAngleDegrees) {
+                double distance = robotToCoral.getNorm();
+                if (distance < nearestDistance) {
+                    nearestDistance = distance;
+                    bestCoral = mostAlignedCoral;
+                }
+            }
+        }
+        
+        return bestCoral;
     }
     
     /**
@@ -312,9 +350,9 @@ public class CoralIntakeAssistCommand extends Command {
     
     @NTParameter(tableName = "Params/Commands/CoralIntakeAssist")
     public static class CoralIntakeAssistParams {
-        static final double assistKp = 0.4;                        // Proportional gain for assist velocity
+        static final double assistKp = 1.1;                        // Proportional gain for assist velocity
         static final double maxAssistVelocity = 3.0;               // Maximum assist velocity (m/s)
         static final double minRobotSpeed = 0.2;                   // Minimum robot speed to activate assist (m/s)
-        static final double maxAngleTowardsCoralDegrees = 45.0;    // Maximum angle to consider "moving towards" coral (degrees) - FIXED from 90°
-    }
+        static final double maxAngleTowardsCoralDegrees = 55.0;
+        }    // Maximum angle to consider "moving towards" coral (degrees) -     
 } 

@@ -237,9 +237,19 @@ public class RobotContainer {
     driverController
         .rightStick()
         .toggleOnTrue(
+          Commands.parallel(
+            new CoralIntakeAssistCommand(
+              swerve,
+              () -> -driverController.getLeftY(),
+              () -> -driverController.getLeftX(),
+              () -> -driverController.getRightX(),
+              RobotStateRecorder::getPoseDriverRobotCurrent,
+              MetersPerSecond.of(0.04),
+              DegreesPerSecond.of(3.0)
+          ),
             superstructure
                 .runGoal(this::determineIntakeState)
-                .until(this::isIntakeComplete));
+                ).until(this::isIntakeComplete));
 
     driverController.b().whileTrue(superstructure.runGoal(() -> SuperstructureState.CORAL_OUTTAKE));
     // driverController.x().whileTrue(
@@ -262,20 +272,6 @@ public class RobotContainer {
 //      climberSubsystem.setWantedState(ClimberSubsystem.WantedState.DEPLOY)),
 //      climberSubsystem::hasDeployed
 //    ));
-
-
-    // Y button - Coral intake assist drive
-    driverController.y().whileTrue(
-        new CoralIntakeAssistCommand(
-            swerve,
-            () -> -driverController.getLeftY(),
-            () -> -driverController.getLeftX(),
-            () -> -driverController.getRightX(),
-            RobotStateRecorder::getPoseDriverRobotCurrent,
-            MetersPerSecond.of(0.04),
-            DegreesPerSecond.of(3.0)
-        )
-    );
 
 
     driverController

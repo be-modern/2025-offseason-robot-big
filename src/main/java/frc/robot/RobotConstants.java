@@ -418,7 +418,7 @@ public final class RobotConstants {
     public static final TunableNumber INTAKE_PIVOT_JERK = new TunableNumber("INTAKE_PIVOT/jerk", 0);
     public static final TunableNumber INTAKE_PIVOT_TOLERANCE = new TunableNumber("INTAKE_PIVIOT/tolerance", 3.5);
 
-    public static final double INTAKE_PIVOT_ENCODER_OFFSET = 0.1904296875 - 0.25;
+    public static final double INTAKE_PIVOT_ENCODER_OFFSET = -0.4768 - 0.25;
     //Motion constants for intake roller
     public static final TunableNumber INTAKE_VOLTAGE = new TunableNumber("INTAKE_ROLLER/intakeVoltage", 15.0);
     public static final TunableNumber INDEX_ROLLER_VOLTAGE = new TunableNumber("INTAKE_ROLLER/indexRollerVoltage", 15.0);
@@ -521,27 +521,6 @@ public final class RobotConstants {
         public static final boolean[] SNAPSHOT_ENABLED = {true};
         public static final int SNAPSHOT_PERIOD = 5; //seconds
         public static final String kPhotonVisionTag = "PhotonVision";
-        
-        @NTParameter(tableName = "Params" + "/" + kPhotonVisionTag)
-        public final static class PhotonVisionParams {
-            // Camera physical configuration
-            public static final double CAMERA_HEIGHT_METERS = 1.0;
-            public static final double CAMERA_PITCH_DEGREES = -30.0;
-            
-            // Camera field of view (FOV)
-            public static final double CAMERA_HORIZONTAL_FOV_DEGREES = 65.93;
-            public static final double CAMERA_VERTICAL_FOV_DEGREES = 51.89;
-            
-            // Camera to robot transform (camera position relative to robot center)
-            public static final double CAMERA_TO_ROBOT_X = 0.14;  // 0.14m front
-            public static final double CAMERA_TO_ROBOT_Y = 0.0;   // 0.00m left
-            public static final double CAMERA_TO_ROBOT_Z = 1.0;  // 0.10m up
-            public static final double CAMERA_TO_ROBOT_ROTATION_DEGREES = 0.0;
-            
-            // Distance estimation parameters
-            public static final double DISTANCE_SCALE_FACTOR = 1.0;
-            public static final double GROUND_HEIGHT_METERS = 0.0;
-        }
         
         // Camera resolution constants (fixed hardware values)
         public static final int CAMERA_RESOLUTION_X = 640;
