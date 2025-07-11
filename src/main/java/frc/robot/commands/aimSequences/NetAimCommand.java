@@ -50,34 +50,15 @@ public class NetAimCommand extends Command {
   public void initialize() {
     // tuning
     if (RobotConstants.TUNING) {
-      xController.setP(ReefAimCommandParamsNT.translationKp.getValue());
-      xController.setI(ReefAimCommandParamsNT.translationKi.getValue());
-      xController.setIZone(ReefAimCommandParamsNT.translationKiZone.getValue());
-      xController.setD(ReefAimCommandParamsNT.translationKd.getValue());
-      xController.setTolerance(
-          ReefAimCommandParamsNT.translationOnTargetToleranceMeter.getValue(),
-          ReefAimCommandParamsNT.translationOnTargetVelocityMetersPerSecond.getValue()
-      );
+      xController.setP(NetAimCommandParamsNT.xKp.getValue());
+      xController.setI(NetAimCommandParamsNT.xKi.getValue());
+      xController.setIZone(NetAimCommandParamsNT.xKiZone.getValue());
+      xController.setD(NetAimCommandParamsNT.xKd.getValue());
 
-      rotationController.setP(ReefAimCommandParamsNT.rotationKp.getValue());
-      rotationController.setI(ReefAimCommandParamsNT.rotationKi.getValue());
-      rotationController.setIZone(ReefAimCommandParamsNT.rotationKiZone.getValue());
-      rotationController.setD(ReefAimCommandParamsNT.rotationKd.getValue());
-      rotationController.setTolerance(
-          ReefAimCommandParamsNT.rotationOnTargetToleranceDegree.getValue() / 180.0f * Math.PI,
-          ReefAimCommandParamsNT.rotationOnTargetVelocityToleranceDegreesPerSecond.getValue() / 180.0f * Math.PI
-      );
-
-      Logging.info(
-          kTag, "Aiming Params: <Drive> Kp = %.2f, Ki = %.2f, Kd = %.2f" +
-              "<Rotation> Kp = %.2f, Ki = %.2f, Kd = %.2f",
-          ReefAimCommandParamsNT.translationKp.getValue(),
-          ReefAimCommandParamsNT.translationKi.getValue(),
-          ReefAimCommandParamsNT.translationKd.getValue(),
-          ReefAimCommandParamsNT.rotationKp.getValue(),
-          ReefAimCommandParamsNT.rotationKi.getValue(),
-          ReefAimCommandParamsNT.rotationKd.getValue()
-      );
+      rotationController.setP(NetAimCommandParamsNT.rotationKp.getValue());
+      rotationController.setI(NetAimCommandParamsNT.rotationKi.getValue());
+      rotationController.setIZone(NetAimCommandParamsNT.rotationKiZone.getValue());
+      rotationController.setD(NetAimCommandParamsNT.rotationKd.getValue());
     }
 
     // calculate destination

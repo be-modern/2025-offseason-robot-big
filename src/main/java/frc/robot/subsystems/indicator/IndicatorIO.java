@@ -3,10 +3,10 @@ package frc.robot.subsystems.indicator;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.drivers.led.AddressableLEDPattern;
-import frc.robot.drivers.led.patterns.BlinkingPattern;
-import frc.robot.drivers.led.patterns.RainbowingPattern;
-import frc.robot.drivers.led.patterns.SolidColorPattern;
+import frc.robot.drivers.led.patterns.*;
 import org.littletonrobotics.junction.AutoLog;
+
+import static edu.wpi.first.units.Units.Seconds;
 
 public interface IndicatorIO {
     default Color allianceColor() {
@@ -24,7 +24,7 @@ public interface IndicatorIO {
     default void reset() {}
 
     enum Patterns {
-        NORMAL(new RainbowingPattern()),
+        NORMAL(new BlinkingPattern(Color.kBlue, 0.5)),
         INTAKE(new BlinkingPattern(Color.kRed, 0.02)),
         AFTER_INTAKE(new BlinkingPattern(Color.kGreen, 0.02)),
         RESET_ODOM(new BlinkingPattern(Color.kWhite, 0.1)),

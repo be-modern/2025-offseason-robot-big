@@ -256,15 +256,16 @@ public class RobotContainer {
                 ).until(this::isIntakeComplete));
 
     driverController.b().whileTrue(superstructure.runGoal(() -> SuperstructureState.CORAL_OUTTAKE));
-    // driverController.x().whileTrue(
-    // Commands.runOnce(() -> {
-    // destinationSupplier.setCurrentGamePiece(DestinationSupplier.GamePiece.CORAL_SCORING);
-    // })
-    // .andThen(
-    // new ReefAimCommand(swerve, indicatorSubsystem)
-    // )
-    // );
-     driverController.x().whileTrue(AutoActions.chase());
+    
+     driverController.x().whileTrue(
+     Commands.runOnce(() -> {
+     destinationSupplier.setCurrentGamePiece(DestinationSupplier.GamePiece.CORAL_SCORING);
+     })
+     .andThen(
+     new ReefAimCommand(swerve, indicatorSubsystem)
+     )
+     );
+//     driverController.x().whileTrue(AutoActions.chase());
 
    driverController.povDown().whileTrue(
      Commands.either(
@@ -443,8 +444,6 @@ public class RobotContainer {
   private SuperstructureState determineIntakeState() {
     boolean hasAlgae = superstructure.hasAlgae();
     boolean inDangerZone = isInReefDangerZone();
-
-    System.out.println("Intake State Decision - HasAlgae: " + hasAlgae + ", InDangerZone: " + inDangerZone);
 
     // If we have algae OR we're in danger zone, use indexed intake
     // Otherwise, use ground intake for safety

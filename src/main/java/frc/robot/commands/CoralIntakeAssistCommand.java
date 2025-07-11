@@ -81,12 +81,7 @@ public class CoralIntakeAssistCommand extends Command {
         
         addRequirements(swerve);
     }
-    
-    @Override
-    public void initialize() {
-        System.out.println("CoralIntakeAssistCommand: Initialized");
-    }
-    
+
     @Override
     public void execute() {
         // Step 1: Process driver joystick input
@@ -145,11 +140,6 @@ public class CoralIntakeAssistCommand extends Command {
     }
     
     @Override
-    public void end(boolean interrupted) {
-        System.out.println("CoralIntakeAssistCommand: Ended (interrupted: " + interrupted + ")");
-    }
-    
-    @Override
     public boolean isFinished() {
         // This command should run continuously when conditions are met
         return false;
@@ -163,7 +153,7 @@ public class CoralIntakeAssistCommand extends Command {
      * @return Translation2d assist velocity to add in robot frame (x, y in meters/second)
      */
     private Translation2d calculateCoralAssist(ChassisSpeeds baseChassisSpeeds) {
-        // Get robot state
+        // Get robot state`
         Pose2d robotPose = RobotStateRecorder.getPoseWorldRobotCurrent().toPose2d();
         Translation2d driverVelocityRobotFrame = new Translation2d(baseChassisSpeeds.vxMetersPerSecond, baseChassisSpeeds.vyMetersPerSecond);
         Translation2d driverVelocityWorldFrame = driverVelocityRobotFrame.rotateBy(robotPose.getRotation());
