@@ -641,6 +641,8 @@ public final class RobotConstants {
     public static final TunableNumber NET_SHOOT_DELAY_TIME = new TunableNumber("EEARM/Roller/netShootDelayTime", 0.2);
     @Deprecated
     public static final TunableNumber PROCESSOR_SHOOT_DELAY_TIME = new TunableNumber("EEARM/Roller/processorShootDelayTime", 0.5);
+    @Deprecated
+    public static final TunableNumber L1_SHOOT_SIDE_EJECT_DELAY_TIME = new TunableNumber("EEARM/Roller/l1ShootSideEjectDelayTime", 1);
 
 
 

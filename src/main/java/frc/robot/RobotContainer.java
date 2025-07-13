@@ -105,6 +105,7 @@ public class RobotContainer {
   private double lastResetTime = 0.0;
   private TimeDelayedBoolean netEjectTimer = new TimeDelayedBoolean(RobotConstants.EndEffectorArmConstants.NET_SHOOT_DELAY_TIME.get());
   private TimeDelayedBoolean processorEjectTimer = new TimeDelayedBoolean(RobotConstants.EndEffectorArmConstants.PROCESSOR_SHOOT_DELAY_TIME.get());
+  private TimeDelayedBoolean l1ShootSideEjectTimer = new TimeDelayedBoolean(RobotConstants.EndEffectorArmConstants.L1_SHOOT_SIDE_EJECT_DELAY_TIME.get());
 
   public RobotContainer() {
     if (RobotBase.isReal()) {
@@ -387,6 +388,13 @@ driverController.x().whileTrue(AutoActions.chase().alongWith(
                 Commands.runOnce(() -> netEjectTimer.reset())
                     .andThen(superstructure.runGoal(() -> SuperstructureState.NET_SCORE_EJECT)
                         .until(() -> netEjectTimer.update(!superstructure.hasAlgae())))));
+    testerController.rightBumper().whileTrue(
+        superstructure.runGoal(() -> SuperstructureState.L1_SHOOT_SIDE)
+            .until(testerController.rightTrigger())
+            .andThen(
+                Commands.runOnce(() -> l1ShootSideEjectTimer.reset())
+                    .andThen(superstructure.runGoal(() -> SuperstructureState.L1_SHOOT_SIDE_EJECT)
+                        .until(() -> l1ShootSideEjectTimer.update(!superstructure.hasCoral())))));
     testerController.start().whileTrue(
         Commands.runOnce(() -> {
               destinationSupplier.setCurrentGamePiece(DestinationSupplier.GamePiece.CORAL_SCORING);
