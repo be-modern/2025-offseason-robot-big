@@ -539,6 +539,7 @@ public class Superstructure extends SubsystemBase {
         if (to == SuperstructureState.AVOID) {
             if (statesBelowFlip.contains(from)) {
                 return runElevator(to.getValue().getPose().elevatorHeight())
+                    .alongWith(runSuperstructureRollers(to))
                         .andThen(
                                 Commands.waitUntil(elevator::isAtGoal),
                                 runEndEffectorArm(to.getValue().getPose().endEffectorAngle()),
