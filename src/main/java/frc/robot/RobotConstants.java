@@ -445,7 +445,7 @@ public final class RobotConstants {
     public static final TunableNumber INDEX_OUTTAKE_VOLTAGE = new TunableNumber("INTAKE_ROLLER/indexRollerVoltage", -12);
     public static final TunableNumber OUTTAKE_VOLTAGE = new TunableNumber("INTAKE_ROLLER/outtakeVoltage", -6.0);
     public static final TunableNumber SHOOT_VOLTAGE = new TunableNumber("INTAKE_ROLLER/shootVoltage", -2.5);
-    public static final TunableNumber INTAKE_HOLD_VOLTAGE = new TunableNumber("INTAKE_ROLLER/intakeHoldVoltage", 5.0);
+    public static final TunableNumber INTAKE_HOLD_VOLTAGE = new TunableNumber("INTAKE_ROLLER/intakeHoldVoltage", 1.5);
 
 
     //Constants for intake pivot
@@ -641,6 +641,8 @@ public final class RobotConstants {
     public static final TunableNumber NET_SHOOT_DELAY_TIME = new TunableNumber("EEARM/Roller/netShootDelayTime", 0.2);
     @Deprecated
     public static final TunableNumber PROCESSOR_SHOOT_DELAY_TIME = new TunableNumber("EEARM/Roller/processorShootDelayTime", 0.5);
+    @Deprecated
+    public static final TunableNumber L1_SHOOT_SIDE_EJECT_DELAY_TIME = new TunableNumber("EEARM/Roller/l1ShootSideEjectDelayTime", 1);
 
 
 
