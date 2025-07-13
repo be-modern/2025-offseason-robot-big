@@ -106,8 +106,8 @@ public class RobotContainer {
   private PhotonVisionSubsystem photonVisionSubsystem;
   private RobotStateRecorder robotStateRecorder = RobotStateRecorder.getInstance(); // NOTE: better to init beforehead
   private double lastResetTime = 0.0;
-  
-  private TimeDelayedBoolean algaeEjectTimer = new TimeDelayedBoolean(0.1);
+  private TimeDelayedBoolean netEjectTimer = new TimeDelayedBoolean(RobotConstants.EndEffectorArmConstants.NET_SHOOT_DELAY_TIME.get());
+  private TimeDelayedBoolean processorEjectTimer = new TimeDelayedBoolean(RobotConstants.EndEffectorArmConstants.PROCESSOR_SHOOT_DELAY_TIME.get());
 
   public RobotContainer() {
     if (RobotBase.isReal()) {
@@ -136,9 +136,7 @@ public class RobotContainer {
               RobotConstants.IntakeConstants.STATOR_CURRENT_LIMIT_AMPS,
               RobotConstants.IntakeConstants.SUPPLY_CURRENT_LIMIT_AMPS,
               RobotConstants.IntakeConstants.IS_INDEXER_INVERT,
-              RobotConstants.IntakeConstants.IS_BRAKE,
-              RobotConstants.IntakeConstants.INDEX_FOLLOWER_MOTOR_ID,
-              RobotConstants.IntakeConstants.INDEX_FOLLOWER_INVERT),
+              RobotConstants.IntakeConstants.IS_BRAKE),
           new BeambreakIOReal(RobotConstants.BeamBreakConstants.INTAKE_BEAMBREAK_ID));
       climberSubsystem = new ClimberSubsystem(new ClimberIOReal());
       endEffectorArmSubsystem = new EndEffectorArmSubsystem(
@@ -258,26 +256,6 @@ public class RobotContainer {
 
     driverController.b().whileTrue(superstructure.runGoal(() -> SuperstructureState.CORAL_OUTTAKE));
     driverController.povUp().whileTrue(superstructure.runGoal(() -> SuperstructureState.SAFE_OUTTAKE));
-    
-//     driverController.x().whileTrue(
-//     Commands.runOnce(() -> {
-//     destinationSupplier.setCurrentGamePiece(DestinationSupplier.GamePiece.CORAL_SCORING);
-//     })
-//     .andThen(
-//     new ReefAimCommand(swerve, indicatorSubsystem)
-//     )
-//     );
-     driverController.x().whileTrue(AutoActions.chase().alongWith(
-         Commands.runOnce(
-             () -> {
-               if(AutoActions.isCoralInSight()) {
-                 indicatorSubsystem.setPattern(IndicatorIO.Patterns.ASSISTED_INTAKE);
-               } else {
-                 indicatorSubsystem.setPattern(IndicatorIO.Patterns.INTAKE);
-               }
-             }
-         ,indicatorSubsystem).repeatedly()
-     ));
 
     //CLIMBER
    driverController.povDown().whileTrue(
@@ -309,17 +287,30 @@ public class RobotContainer {
                 )
               )
               .andThen(
-                Commands.runOnce(() -> algaeEjectTimer.reset())
+                Commands.runOnce(() -> netEjectTimer.reset())
                     .andThen(superstructure
                         .runGoal(() -> SuperstructureState.NET_SCORE_EJECT)
-                        .until(() -> algaeEjectTimer.update(!superstructure.hasAlgae())))),
+                        .until(() -> netEjectTimer.update(!superstructure.hasAlgae())))),
                 // coral
                 createScoringCommand(false, SuperstructureState.L4),
                 superstructure::hasAlgae));
     driverController
         .leftTrigger()
         .whileTrue(
-            createScoringCommand(false, SuperstructureState.L3));
+            new BlocklessEitherCommand(
+              // processor
+              Commands.deadline(
+                Commands.waitUntil(()->driverController.rightTrigger().getAsBoolean()),
+                superstructure.runGoal(() -> SuperstructureState.PROCESSOR_SCORE))
+                  
+                  .andThen(
+                    Commands.runOnce(() -> processorEjectTimer.reset())
+                    .andThen(superstructure.runGoal(() -> SuperstructureState.PROCESSOR_SCORE_EJECT)
+                    .until(() -> processorEjectTimer.update(!superstructure.hasAlgae())))
+                  ),
+              createScoringCommand(false, SuperstructureState.L3),
+              () -> superstructure.hasAlgae()
+            ));
     driverController
         .back()
         .whileTrue(
@@ -336,6 +327,28 @@ public class RobotContainer {
         .leftStick()
         .whileTrue(
             createScoringCommand(true, SuperstructureState.L2));
+
+
+  //TESTING : TODO: remove
+    //     driverController.x().whileTrue(
+//     Commands.runOnce(() -> {
+//     destinationSupplier.setCurrentGamePiece(DestinationSupplier.GamePiece.CORAL_SCORING);
+//     })
+//     .andThen(
+//     new ReefAimCommand(swerve, indicatorSubsystem)
+//     )
+//     );
+driverController.x().whileTrue(AutoActions.chase().alongWith(
+  Commands.runOnce(
+      () -> {
+        if(AutoActions.isCoralInSight()) {
+          indicatorSubsystem.setPattern(IndicatorIO.Patterns.ASSISTED_INTAKE);
+        } else {
+          indicatorSubsystem.setPattern(IndicatorIO.Patterns.INTAKE);
+        }
+      }
+  ,indicatorSubsystem).repeatedly()
+));
 
   }
 
@@ -373,9 +386,9 @@ public class RobotContainer {
         superstructure.runGoal(() -> SuperstructureState.NET_SCORE)
             .until(testerController.rightTrigger())
             .andThen(
-                Commands.runOnce(() -> algaeEjectTimer.reset())
+                Commands.runOnce(() -> netEjectTimer.reset())
                     .andThen(superstructure.runGoal(() -> SuperstructureState.NET_SCORE_EJECT)
-                        .until(() -> algaeEjectTimer.update(!superstructure.hasAlgae())))));
+                        .until(() -> netEjectTimer.update(!superstructure.hasAlgae())))));
     testerController.start().whileTrue(
         Commands.runOnce(() -> {
               destinationSupplier.setCurrentGamePiece(DestinationSupplier.GamePiece.CORAL_SCORING);

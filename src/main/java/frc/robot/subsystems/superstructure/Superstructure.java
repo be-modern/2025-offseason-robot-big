@@ -153,6 +153,8 @@ public class Superstructure extends SubsystemBase {
                     SuperstructureState.L1_INTAKE_SIDE,
                     SuperstructureState.IDLE,
                     SuperstructureState.CORAL_OUTTAKE,
+                    SuperstructureState.PROCESSOR_SCORE,
+                    SuperstructureState.PROCESSOR_SCORE_EJECT,
                     SuperstructureState.SAFE_OUTTAKE
             );
     final Set<SuperstructureState> statesAboveFlip =
