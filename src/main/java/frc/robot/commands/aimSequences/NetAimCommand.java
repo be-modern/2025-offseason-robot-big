@@ -3,6 +3,7 @@ package frc.robot.commands.aimSequences;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -13,8 +14,10 @@ import frc.robot.subsystems.indicator.IndicatorIO;
 import lib.ironpulse.swerve.Swerve;
 import lib.ironpulse.swerve.SwerveLimit;
 import lib.ironpulse.utils.Logging;
+import lib.ironpulse.utils.TimeDelayedBoolean;
 import lib.ntext.NTParameter;
 
+import lombok.extern.java.Log;
 import org.littletonrobotics.AllianceFlipUtil;
 import org.littletonrobotics.junction.Logger;
 
@@ -27,21 +30,20 @@ public class NetAimCommand extends Command {
   private final static String kTag = "Commands/NetAimCommand";
   private final Swerve swerve;
   private final DoubleSupplier yVelocitySupplier;
-  private ProfiledPIDController xController;
+  private PIDController xController;
   private PIDController rotationController;
-  private Pose2d poseWorldRobot, poseWorldTarget;
+  private Pose2d poseWorldRobot, poseWorldTarget, velocityWorldRobot;
+  private TimeDelayedBoolean imuStable = new TimeDelayedBoolean(0.5);
 
   public NetAimCommand(Swerve swerve, DoubleSupplier yVelocitySupplier) {
     this.swerve = swerve;
     this.yVelocitySupplier = yVelocitySupplier;
 
-    xController = new ProfiledPIDController(
+    xController = new PIDController(
         NetAimCommandParamsNT.xKp.getValue(),
         NetAimCommandParamsNT.xKi.getValue(),
-        NetAimCommandParamsNT.xKd.getValue(),
-        new TrapezoidProfile.Constraints(
-            NetAimCommandParamsNT.translationVelocityMaxFar.getValue(),
-            NetAimCommandParamsNT.translationAccelerationMax.getValue()));
+        NetAimCommandParamsNT.xKd.getValue()
+    );
     rotationController = new PIDController(
         NetAimCommandParamsNT.rotationKp.getValue(),
         NetAimCommandParamsNT.rotationKi.getValue(),
@@ -51,33 +53,38 @@ public class NetAimCommand extends Command {
 
   @Override
   public void initialize() {
-    // tuning
-    if (RobotConstants.TUNING) {
-      xController.setP(NetAimCommandParamsNT.xKp.getValue());
-      xController.setI(NetAimCommandParamsNT.xKi.getValue());
-      xController.setIZone(NetAimCommandParamsNT.xKiZone.getValue());
-      xController.setD(NetAimCommandParamsNT.xKd.getValue());
+    xController.setP(NetAimCommandParamsNT.xKp.getValue());
+    xController.setI(NetAimCommandParamsNT.xKi.getValue());
+    xController.setIZone(NetAimCommandParamsNT.xKiZone.getValue());
+    xController.setD(NetAimCommandParamsNT.xKd.getValue());
 
-      rotationController.setP(NetAimCommandParamsNT.rotationKp.getValue());
-      rotationController.setI(NetAimCommandParamsNT.rotationKi.getValue());
-      rotationController.setIZone(NetAimCommandParamsNT.rotationKiZone.getValue());
-      rotationController.setD(NetAimCommandParamsNT.rotationKd.getValue());
-    }
+    rotationController.setP(NetAimCommandParamsNT.rotationKp.getValue());
+    rotationController.setI(NetAimCommandParamsNT.rotationKi.getValue());
+    rotationController.setIZone(NetAimCommandParamsNT.rotationKiZone.getValue());
+    rotationController.setD(NetAimCommandParamsNT.rotationKd.getValue());
+
 
     // calculate destination
+    poseWorldRobot = RobotStateRecorder.getPoseWorldRobotCurrent().toPose2d();
     poseWorldTarget = AimGoalSupplier.getFinalNetTarget();
-    var velocityWorldRobot = RobotStateRecorder.getVelocityWorldRobotCurrent();
+    velocityWorldRobot = RobotStateRecorder.getVelocityWorldRobotCurrent();
+
+    double xCurr = poseWorldRobot.getTranslation().getX();
+    double xFinal = poseWorldTarget.getTranslation().getX();
 
     // PID init with field-relative velocities
     rotationController.enableContinuousInput(0, Math.PI * 2);
     xController.setTolerance(0.05, 0.15);
-    xController.reset(poseWorldRobot.getTranslation().getX(), velocityWorldRobot.getX());
+    xController.reset();
     rotationController.reset();
+
+    imuStable.update(false);
   }
 
   @Override
   public void execute() {
     poseWorldRobot = RobotStateRecorder.getPoseWorldRobotCurrent().toPose2d();
+    velocityWorldRobot = RobotStateRecorder.getVelocityWorldRobotCurrent();
     Pose2d poseRobotTarget = poseWorldTarget.relativeTo(poseWorldRobot);
 
     double xCurr = poseWorldRobot.getTranslation().getX();
@@ -116,7 +123,27 @@ public class NetAimCommand extends Command {
 
   @Override
   public boolean isFinished() {
-    return xController.atSetpoint();
+    double xCurr = poseWorldRobot.getTranslation().getX();
+    double xFinal = poseWorldTarget.getTranslation().getX();
+    Rotation3d imuRotation = swerve.getEstimatedPose().getRotation();
+
+    var xOnTarget = epsilonEquals(xCurr, xFinal, NetAimCommandParamsNT.translationOnTargetMeters.getValue());
+    var xStationary = Math.abs(velocityWorldRobot.getTranslation().getX()) < NetAimCommandParamsNT.translationStationaryMetersPerSecond.getValue();
+    var imuPitchStable = epsilonEquals(
+        imuRotation.getMeasureY().in(Degree), 0.0,
+        NetAimCommandParamsNT.imuStationaryDeg.getValue()
+    );
+    var imuRollStable = epsilonEquals(
+        imuRotation.getMeasureX().in(Degree), 0.0,
+        NetAimCommandParamsNT.imuStationaryDeg.getValue()
+    );
+
+    Logger.recordOutput(kTag + "/xOnTarget", xOnTarget);
+    Logger.recordOutput(kTag + "/xStationary", xStationary);
+    Logger.recordOutput(kTag + "/imuPitchStable", imuPitchStable);
+    Logger.recordOutput(kTag + "/imuRollStable", imuRollStable);
+
+    return xOnTarget && xStationary && imuStable.update(imuPitchStable && imuRollStable, NetAimCommandParamsNT.imuStationaryTime.getValue());
   }
 
   @Override
@@ -135,7 +162,12 @@ public class NetAimCommand extends Command {
     static final double translationVelocityMaxFar = 3.0;
     static final double translationVelocityMaxNear = 2.0;
     static final double translationParamsChangeDistance = 2.0;
-    static final double translationAccelerationMax = 8.0;
+    static final double translationAccelerationMax = 12.0;
+
+    static final double translationOnTargetMeters = 0.05;
+    static final double translationStationaryMetersPerSecond = 0.15;
+    static final double imuStationaryDeg = 3;
+    static final double imuStationaryTime = 0.4;
 
     static final double rotationKp = 4.0;
     static final double rotationKi = 0.01;

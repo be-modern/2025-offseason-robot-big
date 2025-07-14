@@ -42,7 +42,7 @@ import static lib.ironpulse.math.MathTools.cross;
 import static lib.ironpulse.math.MathTools.toAngle;
 
 public class AutoActions {
-  private static final Pose2d kLeftDecisionPoint = new Pose2d(
+  private static final Pose2d kLeftIntakePoint = new Pose2d(
       new Translation2d(1.4, 6.8),
       Rotation2d.fromDegrees(144)
   );
@@ -54,15 +54,15 @@ public class AutoActions {
       new Translation2d(2.50, 5.3),
       Rotation2d.fromDegrees(180)
   );
-  private static final RotationTarget kLeftBackoffViewAngle = new RotationTarget(
+  private static final RotationTarget kLeftBackoffPointAngle = new RotationTarget(
       0.45, Rotation2d.fromDegrees(-10)
   );
-  private static final RotationTarget kLeftDecisionPointViewAngle = new RotationTarget(
+  private static final RotationTarget kLeftIntakePointAngle = new RotationTarget(
       1.0, Rotation2d.fromDegrees(-26)
   );
 
 
-  private static final Pose2d kRightDecisionPoint = new Pose2d(
+  private static final Pose2d kRightIntakePoint = new Pose2d(
       new Translation2d(1.4, 1.2),
       Rotation2d.fromDegrees(-144)
   );
@@ -74,10 +74,10 @@ public class AutoActions {
       new Translation2d(2.50, 2.7),
       Rotation2d.fromDegrees(180)
   );
-  private static final RotationTarget kRightBackoffViewAngle = new RotationTarget(
+  private static final RotationTarget kRightBackoffPointAngle = new RotationTarget(
       0.45, Rotation2d.fromDegrees(10)
   );
-  private static final RotationTarget kRightDecisionPointViewAngle = new RotationTarget(
+  private static final RotationTarget kRightIntakePointAngle = new RotationTarget(
       1.0, Rotation2d.fromDegrees(26)
   );
 
@@ -104,7 +104,7 @@ public class AutoActions {
   }
 
   public static Command indicate(IndicatorIO.Patterns pattern) {
-    return Commands.run(() -> indicator.setPattern(pattern));
+    return Commands.run(() -> indicator.setPattern(pattern), indicator);
   }
 
   public static Command chase() {
@@ -174,9 +174,9 @@ public class AutoActions {
     return swerve.defer(() -> {
       Pose2d current = RobotStateRecorder.getPoseWorldRobotCurrent().toPose2d();
       Pose2d backoff = AllianceFlipUtil.apply(isLeft ? kLeftBackoff : kRightBackoff);
-      Pose2d decision = AllianceFlipUtil.apply(isLeft ? kLeftDecisionPoint : kRightDecisionPoint);
-      RotationTarget backoffAngle = isLeft ? kLeftBackoffViewAngle : kRightBackoffViewAngle;
-      RotationTarget decisionAngle = isLeft ? kLeftDecisionPointViewAngle : kRightDecisionPointViewAngle;
+      Pose2d decision = AllianceFlipUtil.apply(isLeft ? kLeftIntakePoint : kRightIntakePoint);
+      RotationTarget backoffAngle = isLeft ? kLeftBackoffPointAngle : kRightBackoffPointAngle;
+      RotationTarget decisionAngle = isLeft ? kLeftIntakePointAngle : kRightIntakePointAngle;
 
       List<Pose2d> waypoints = shouldBackoff
           ? List.of(current, backoff, decision)
@@ -190,6 +190,20 @@ public class AutoActions {
           followPath(path),
           applySwerveLimit().repeatedly()
       );
+    });
+  }
+
+  public static Command driveToBackoffPoint(boolean isLeft) {
+    return swerve.defer(() -> {
+      Pose2d current = RobotStateRecorder.getPoseWorldRobotCurrent().toPose2d();
+      Pose2d backoff = AllianceFlipUtil.apply(isLeft ? kLeftBackoff : kRightBackoff);
+      RotationTarget backoffAngle = isLeft ? kLeftBackoffPointAngle : kRightBackoffPointAngle;
+
+      List<Pose2d> waypoints = List.of(current, backoff);
+      List<RotationTarget> rotationTargets = List.of(backoffAngle);
+
+      PathPlannerPath path = generatePath(waypoints, rotationTargets, 4.5, 12.0, 0.0);
+      return followPath(path);
     });
   }
 
@@ -456,8 +470,12 @@ public class AutoActions {
     return Math.abs(dirRobotCoral.getDegrees()) < AutoParamsNT.CoralInSightDegs.getValue();
   }
 
-  public static boolean isControlCoral() {
-    return superstructure.hasCoral() || superstructure.hasIndexedCoral();
+  public static boolean hasCoralAtEE() {
+    return superstructure.hasCoral();
+  }
+
+  public static boolean hasCoralAtIndexer() {
+    return superstructure.hasIndexedCoral();
   }
 
   @NTParameter(tableName = "Params/Auto")

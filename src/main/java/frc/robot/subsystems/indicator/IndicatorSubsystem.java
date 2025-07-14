@@ -46,7 +46,7 @@ public class IndicatorSubsystem extends SubsystemBase {
     }
 
     private void resetLed() {
-        if (!timer.hasElapsed(2)) return;
+        if (!timer.hasElapsed(1.0)) return;
         setPattern(IndicatorIO.Patterns.NORMAL);
     }
 

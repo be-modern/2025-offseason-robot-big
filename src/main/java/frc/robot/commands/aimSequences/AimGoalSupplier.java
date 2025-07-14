@@ -357,8 +357,8 @@ public class AimGoalSupplier {
     static final double HexagonDangerDegrees = 45.0;
     static final double EdgeCaseMaxDelta = 0.2;
     static final double ShiftingTerminate = 0.2;
-    static final double NetClearanceDistance = 1.0;
-    static final double NetNearDistance = 1.60;
+    static final double NetClearanceDistance = 0.9;
+    static final double NetNearDistance = 1.35;
   }
 
   private record TagCondition(int tagA, int tagB, char axis, int positiveResult, int negativeResult) {

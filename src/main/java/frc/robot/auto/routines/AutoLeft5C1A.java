@@ -35,7 +35,7 @@ public class AutoLeft5C1A extends AutoRoutine {
                 chase(),
                 indicate(IndicatorIO.Patterns.ASSISTED_INTAKE)
             ).onlyIf(AutoActions::isCoralInSight)
-        ).until(() -> AutoActions.isInIntakeDangerZone() || AutoActions.isControlCoral()),
+        ).until(() -> AutoActions.isInIntakeDangerZone() || AutoActions.hasCoralAtIndexer()),
         intake()
     );
   }

@@ -233,6 +233,7 @@ public class RobotContainer {
                   TransformRecorder.kFrameWorld,
                   TransformRecorder.kFrameRobot);
               lastResetTime = Timer.getFPGATimestamp();
+              indicatorSubsystem.setPattern(IndicatorIO.Patterns.RESET_ODOM);
             })));
 
     // INTAKE and OUTTAKE

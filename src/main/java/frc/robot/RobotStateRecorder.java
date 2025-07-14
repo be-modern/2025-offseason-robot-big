@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.auto.AutoActions;
 import frc.robot.utils.CoralRecorder;
+import lib.ironpulse.math.obstacle.Obstacle2d;
 import lib.ironpulse.rbd.TransformRecorder;
 import lombok.Getter;
 import lombok.Setter;
@@ -110,6 +111,10 @@ public class RobotStateRecorder extends TransformRecorder {
 
   public static void addCoralMeasurement(Translation2d loc) {
     recorder.addCoralMeasurement(loc, RobotConstants.LOOPER_DT);
+  }
+
+  public static void setCoralFilterRegion(Obstacle2d region) {
+    recorder.setFilterRegion(region);
   }
 
   public static Optional<CoralRecorder.CoralInfo> getNearestCoral() {

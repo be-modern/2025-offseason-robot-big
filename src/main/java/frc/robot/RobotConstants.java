@@ -258,7 +258,7 @@ public final class RobotConstants {
         .steerMotorId(3)
         .encoderId(10)
         .driveMotorEncoderOffset(Degree.of(0))
-        .steerMotorEncoderOffset(Rotations.of(-0.20849609375))
+        .steerMotorEncoderOffset(Rotations.of(-0.23291))
         .driveInverted(false)
         .steerInverted(true)
         .encoderInverted(false)

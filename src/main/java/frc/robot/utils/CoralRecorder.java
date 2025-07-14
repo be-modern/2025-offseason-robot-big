@@ -10,8 +10,11 @@ import lib.ironpulse.math.obstacle.PolygonObstacle2d;
 import lib.ntext.NTParameter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.swing.text.html.Option;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -40,8 +43,24 @@ public class CoralRecorder {
       new Translation2d(FieldConstants.fieldLength - 14.500, 3.194)
   );
 
+  public static Obstacle2d kBlueLeftAutoCoralRegion = new PolygonObstacle2d(
+      new Translation2d(0.000, 6.140),
+      new Translation2d(1.906, 5.270),
+      new Translation2d(3.467, 5.270),
+      new Translation2d(7.538, 5.270),
+      new Translation2d(7.538, 8.024),
+      new Translation2d(1.807, 8.005)
+  );
+  public static Obstacle2d kBlueRightAutoCoralRegion = new PolygonObstacle2d(
+
+  );
+
   public int currentId = 0;
   public List<CoralInfo> coralInfos = new ArrayList<>();
+
+  @Getter
+  @Setter
+  public Obstacle2d filterRegion = null;
 
   public void update(double dt) {
     Iterator<CoralInfo> iterator = coralInfos.iterator();
@@ -82,10 +101,12 @@ public class CoralRecorder {
       );
     } else {
       // does not have any near coral, create a new one
-      CoralInfo info = new CoralInfo(
-          currentId++, loc, 0.0, CoralRecorderParamsNT.confidenceStart.getValue(), true
-      );
-      coralInfos.add(info);
+      if(filterRegion == null || filterRegion.isInside(loc)) {
+        CoralInfo info = new CoralInfo(
+            currentId++, loc, 0.0, CoralRecorderParamsNT.confidenceStart.getValue(), true
+        );
+        coralInfos.add(info);
+      }
     }
   }
 

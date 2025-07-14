@@ -84,7 +84,7 @@ public class DecisionTree {
     }
 
     // 2. if currentCommand is done, try transitions
-    if (currentCommand.isFinished() || shouldAdvanceCurrent) {
+    if (shouldAdvanceCurrent) {
       shouldAdvanceCurrent = false;
       for (BooleanSupplier edge : graph.outgoingEdgesOf(currentCommand)) {
         if (edge.getAsBoolean()) {
@@ -103,7 +103,7 @@ public class DecisionTree {
       return true;
     }
 
-    boolean done = currentCommand.isFinished() || shouldAdvanceCurrent;
+    boolean done = shouldAdvanceCurrent;
     boolean terminal = graph.outgoingEdgesOf(currentCommand).isEmpty();
     return done && terminal;
   }

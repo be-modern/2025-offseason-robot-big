@@ -26,7 +26,7 @@ public interface IndicatorIO {
 
         RESET_ODOM(new BlinkingPattern(Color.kPurple, 0.1)),
         AIMING(new BlinkingPattern(Color.kYellow, 0.02)),
-        AIMED(new SolidColorPattern(Color.kGreen)),
+        AIMED(new BlinkingPattern(Color.kGreen, 0.1)),
 
         CLIMB_DEPLOYED(new BlinkingPattern(Color.kWhite, 0.02)),
         CLIMB_FINISHED(new RainbowingPattern());

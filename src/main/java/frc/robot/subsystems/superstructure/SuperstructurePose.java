@@ -50,7 +50,7 @@ public record SuperstructurePose(DoubleSupplier elevatorHeight, DoubleSupplier e
         L2("L2",                        0.16,  190,   132, 60),  // alternate: 110
         L3("L3",                        0.53,  185,   132, 60),  // alternate: 110
         L4("L4",                        1.445, 225,   132, 60),  // alternate: 110
-        NET_SCORE("Net Score",          1.4,   -133,  132,  60),   // alternate: 40
+        NET_SCORE("Net Score",          1.4,   -133,  60,  60),   // alternate: 40
         P1("P1",                        0.52,  -10,   132,60),
         P2("P2",                        0.85,  -10,   132,60),
         CORAL_GROUND_INTAKE("Coral Ground Intake", 0.01, 0, 140),
