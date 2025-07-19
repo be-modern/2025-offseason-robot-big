@@ -220,8 +220,7 @@ public class RobotContainer {
 
     driverController.start().onTrue(
         swerve.defer(() -> {
-          return
-              SwerveCommands.resetAngle(swerve, AllianceFlipUtil.apply(Rotation2d.k180deg))
+          return SwerveCommands.resetAngle(swerve, AllianceFlipUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg)
                   .alongWith(
                       Commands.runOnce(() -> {
                         RobotStateRecorder.getInstance().resetTransform(

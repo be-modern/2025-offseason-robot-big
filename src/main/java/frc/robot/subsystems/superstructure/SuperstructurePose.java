@@ -61,7 +61,7 @@ public record SuperstructurePose(DoubleSupplier elevatorHeight, DoubleSupplier e
         SAFE_OUTTAKE("Safe Outtake", 0.53, 0, 60),
         IDLE("Idle",                    0.01,  0,     132, 60),  // alternate: 110
         PROCESSOR("Processor", 0.16, 0, 60),
-        AVOID("Avoid",                  0.51,  0,     132, 60);  // alternate: 110
+        AVOID("Avoid",                  0.53,  0,     132, 60);  // alternate: 110
 
 
         
