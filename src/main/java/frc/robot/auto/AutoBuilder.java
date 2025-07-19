@@ -153,9 +153,13 @@ public class AutoBuilder {
                   driveToIntakePoint(isLeft, firstTimeToIntake).until(AutoActions::isCoralInSight),
                   chase().onlyIf(AutoActions::isCoralInSight)
               ).until(() -> AutoActions.isInIntakeDangerZone() || hasSeenCoral || AutoActions.hasCoralAtEE()),
-              sequence(
+              parallel(
 //                  forceZero().onlyIf(() -> idx == 1),
-                  intake()
+                  intake(),
+                  sequence(
+                      waitUntil(() -> superstructure.getState() == SuperstructureState.CORAL_GROUND_INTAKE && superstructure.poseAtGoal()),
+                      superstructure.runZero()
+                  )
               )
           );
         }, Set.of(swerve, superstructure))
