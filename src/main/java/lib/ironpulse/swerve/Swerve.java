@@ -214,7 +214,10 @@ public class Swerve extends SubsystemBase {
   }
 
   public void resetEstimatedPose(Pose3d pose) {
+    odometryLock.lock();
     poseEstimator.resetPose(pose);
+    poseEstimator.resetPose(pose);
+    odometryLock.unlock();
   }
 
   public Optional<Pose3d> getEstimatedPoseAt(Time time) {

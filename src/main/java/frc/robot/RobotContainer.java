@@ -219,8 +219,7 @@ public class RobotContainer {
             DegreesPerSecond.of(3.0)));
 
     driverController.start().onTrue(
-        swerve.defer(() -> {
-          return SwerveCommands.resetAngle(swerve, AllianceFlipUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg)
+          SwerveCommands.resetAngle(swerve, () -> AllianceFlipUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg)
                   .alongWith(
                       Commands.runOnce(() -> {
                         RobotStateRecorder.getInstance().resetTransform(
@@ -228,8 +227,7 @@ public class RobotContainer {
                             TransformRecorder.kFrameRobot);
                         indicatorSubsystem.indicateWithTimeout(IndicatorIO.Patterns.RESET_ODOM, 0.5).schedule();
                       }))
-                  .ignoringDisable(true);
-        }).ignoringDisable(true)
+                  .ignoringDisable(true)
     );
 
     // INTAKE and OUTTAKE

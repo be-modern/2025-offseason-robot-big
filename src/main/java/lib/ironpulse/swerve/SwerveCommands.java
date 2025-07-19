@@ -138,6 +138,14 @@ public class SwerveCommands {
     }).ignoringDisable(true);
   }
 
+  public static Command resetAngle(Swerve swerve, Supplier<Rotation2d> rotation) {
+    return Commands.runOnce(() -> {
+      Pose3d poseWorldRobotCurr = swerve.getEstimatedPose();
+      Pose3d newPoseWorldRobotCurr = new Pose3d(poseWorldRobotCurr.getTranslation(), new Rotation3d(rotation.get()));
+      swerve.resetEstimatedPose(newPoseWorldRobotCurr);
+    }).ignoringDisable(true);
+  }
+
   public static Command followPathPlannerTrajectory(
       Swerve swerve,
       PathPlannerTrajectory trajectory,
