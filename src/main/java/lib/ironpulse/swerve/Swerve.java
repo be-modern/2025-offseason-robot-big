@@ -215,8 +215,7 @@ public class Swerve extends SubsystemBase {
 
   public void resetEstimatedPose(Pose3d pose) {
     odometryLock.lock();
-    imuIO.reset();
-    poseEstimator.resetPose(pose);
+    poseEstimator.resetPosition(imuIOInputs.odometryRotations[0], getModulePositions(), pose);
     odometryLock.unlock();
   }
 
