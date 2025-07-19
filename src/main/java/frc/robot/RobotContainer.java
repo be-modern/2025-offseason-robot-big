@@ -346,14 +346,15 @@ public class RobotContainer {
 
 
     //TESTING : TODO: remove
-    driverController.x().whileTrue(
-        Commands.runOnce(() -> {
-              destinationSupplier.setCurrentGamePiece(DestinationSupplier.GamePiece.CORAL_SCORING);
-            })
-            .andThen(
-                new ReefAimCommand(swerve, indicatorSubsystem)
-            )
-    );
+//    driverController.x().whileTrue(
+//        Commands.runOnce(() -> {
+//              destinationSupplier.setCurrentGamePiece(DestinationSupplier.GamePiece.CORAL_SCORING);
+//            })
+//            .andThen(
+//                new ReefAimCommand(swerve, indicatorSubsystem)
+//            )
+//    );
+    driverController.x().onTrue(superstructure.runZero());
 //    driverController.x().whileTrue(
 //        Commands.deadline(
 //            AutoActions.chase().until(AutoActions::isInIntakeDangerZone),
