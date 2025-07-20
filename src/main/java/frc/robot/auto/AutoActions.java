@@ -237,10 +237,10 @@ public class AutoActions {
             RobotStateRecorder::getVelocityWorldRobotCurrent,
             new PIDController(4.5, 0.0, 0.1),
             new PIDController(5.0, 0.0, 0.1),
-            Meters.of(0.10),
-            Degrees.of(2.0)
+            Meters.of(0.15),
+            Degrees.of(7.0)
         )
-    ).withTimeout(5.0);
+    ).withTimeout(2.0);
   }
 
   public static Command driveToEndPoint(boolean isLeft) {

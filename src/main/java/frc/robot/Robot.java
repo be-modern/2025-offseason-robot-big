@@ -36,9 +36,6 @@ public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
   public static PowerDistribution powerDistribution;
-  public static LinearFilter voltageFilter = LinearFilter.singlePoleIIR(1.0 / (2.0 * Math.PI * 100), LOOPER_DT);
-  public static LinearFilter currentFilter = LinearFilter.singlePoleIIR(1.0 / (2.0 * Math.PI * 100), LOOPER_DT);
-  public static LinearFilter powerFilter = LinearFilter.singlePoleIIR(1.0 / (2.0 * Math.PI * 100), LOOPER_DT);
 
   public Robot() {
     super(LOOPER_DT);
@@ -49,7 +46,7 @@ public class Robot extends LoggedRobot {
   public void robotInit() {
     if (!RobotConstants.useReplay) {
       // logger initialization
-      Logger.addDataReceiver(new NT4Publisher());
+      // Logger.addDataReceiver(new NT4Publisher()); // REMOVE before comp
       Logger.addDataReceiver(new WPILOGWriter());
     } else {
       // Replaying a log, set up replay source
@@ -61,8 +58,6 @@ public class Robot extends LoggedRobot {
 
     Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
     Logger.start();
-
-    // early-stage initialization
     DriverStation.silenceJoystickConnectionWarning(true);
 
 
@@ -80,7 +75,7 @@ public class Robot extends LoggedRobot {
     powerDistribution.clearStickyFaults();
     robotContainer = new RobotContainer();
 
-    // logger
+    // elastic
     WebServer.start(5800, Filesystem.getDeployDirectory().getPath());
 
     // warm-up path-following
@@ -103,10 +98,6 @@ public class Robot extends LoggedRobot {
     Logger.recordOutput("Power/Current", current);
     Logger.recordOutput("Power/Voltage", voltage);
     Logger.recordOutput("Power/Power", power);
-
-    Logger.recordOutput("Power/CurrentFiltered", currentFilter.calculate(current));
-    Logger.recordOutput("Power/VoltageFiltered", voltageFilter.calculate(voltage));
-    Logger.recordOutput("Power/PowerFiltered", powerFilter.calculate(power));
   }
 
   @Override
