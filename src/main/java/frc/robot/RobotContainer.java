@@ -127,8 +127,8 @@ public class RobotContainer {
           new RollerIOReal(
               RobotConstants.IntakeConstants.INTAKE_MOTOR_ID,
               RobotConstants.CANIVORE_CAN_BUS_NAME,
-              60,
-              60,
+              100,
+              100,
               RobotConstants.IntakeConstants.IS_INTAKER_INVERT,
               RobotConstants.IntakeConstants.IS_BRAKE),
           new RollerIOReal(

@@ -424,8 +424,8 @@ public final class RobotConstants {
     public static final double INTAKE_PIVOT_ROTOR_ENCODER_RATIO = 45 / 11 * 56 / 20 * 56 / 8;
 
     //Constants for intake roller
-    public static final int STATOR_CURRENT_LIMIT_AMPS = 60;
-    public static final int SUPPLY_CURRENT_LIMIT_AMPS = 60;
+    public static final int STATOR_CURRENT_LIMIT_AMPS = 80;
+    public static final int SUPPLY_CURRENT_LIMIT_AMPS = 80;
     public static final boolean IS_BRAKE = false;
     public static final boolean IS_INTAKER_INVERT = true;
     public static final boolean IS_INDEXER_INVERT = false;

@@ -289,7 +289,7 @@ public class AutoActions {
 
   public static Command shoot() {
     return sequence(
-      waitSeconds(0.15).onlyIf(() -> DestinationSupplier.getInstance().getCoralScoreState() == SuperstructureState.L4),
+      waitSeconds(0.1).onlyIf(() -> DestinationSupplier.getInstance().getCoralScoreState() == SuperstructureState.L4),
       superstructure
         .runGoal(() -> DestinationSupplier.getInstance().getShootState())
         .until(() -> !superstructure.hasCoral())
