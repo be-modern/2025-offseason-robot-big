@@ -9,7 +9,7 @@
           {
             "title": "Intake",
             "x": 0.0,
-            "y": 128.0,
+            "y": 64.0,
             "width": 256.0,
             "height": 256.0,
             "type": "List Layout",
@@ -50,7 +50,7 @@
           {
             "title": "Elevator",
             "x": 256.0,
-            "y": 128.0,
+            "y": 64.0,
             "width": 256.0,
             "height": 256.0,
             "type": "List Layout",
@@ -91,7 +91,7 @@
           {
             "title": "EndEffector",
             "x": 512.0,
-            "y": 128.0,
+            "y": 64.0,
             "width": 256.0,
             "height": 256.0,
             "type": "List Layout",
@@ -132,7 +132,7 @@
           {
             "title": "Climber",
             "x": 768.0,
-            "y": 128.0,
+            "y": 64.0,
             "width": 256.0,
             "height": 256.0,
             "type": "List Layout",
@@ -173,7 +173,7 @@
           {
             "title": "Beambreaks",
             "x": 1024.0,
-            "y": 128.0,
+            "y": 64.0,
             "width": 256.0,
             "height": 256.0,
             "type": "List Layout",
@@ -238,8 +238,8 @@
         "containers": [
           {
             "title": "Goal",
-            "x": 0.0,
-            "y": 384.0,
+            "x": 1280.0,
+            "y": 0.0,
             "width": 192.0,
             "height": 128.0,
             "type": "Text Display",
@@ -252,8 +252,8 @@
           },
           {
             "title": "Next",
-            "x": 192.0,
-            "y": 384.0,
+            "x": 1280.0,
+            "y": 128.0,
             "width": 192.0,
             "height": 128.0,
             "type": "Text Display",
@@ -266,8 +266,8 @@
           },
           {
             "title": "State",
-            "x": 384.0,
-            "y": 384.0,
+            "x": 1280.0,
+            "y": 256.0,
             "width": 192.0,
             "height": 128.0,
             "type": "Text Display",
@@ -280,7 +280,7 @@
           },
           {
             "title": "PoseAtGoal",
-            "x": 576.0,
+            "x": 1280.0,
             "y": 384.0,
             "width": 192.0,
             "height": 128.0,
@@ -300,7 +300,7 @@
             "x": 0.0,
             "y": 0.0,
             "width": 192.0,
-            "height": 128.0,
+            "height": 64.0,
             "type": "Text Display",
             "properties": {
               "topic": "/FMSInfo/EventName",
@@ -314,7 +314,7 @@
             "x": 192.0,
             "y": 0.0,
             "width": 192.0,
-            "height": 128.0,
+            "height": 64.0,
             "type": "Boolean Box",
             "properties": {
               "topic": "/FMSInfo/IsRedAlliance",
@@ -331,7 +331,7 @@
             "x": 384.0,
             "y": 0.0,
             "width": 192.0,
-            "height": 128.0,
+            "height": 64.0,
             "type": "Text Display",
             "properties": {
               "topic": "/FMSInfo/StationNumber",
@@ -342,10 +342,10 @@
           },
           {
             "title": "Field",
-            "x": 768.0,
-            "y": 384.0,
-            "width": 704.0,
-            "height": 448.0,
+            "x": 0.0,
+            "y": 320.0,
+            "width": 576.0,
+            "height": 256.0,
             "type": "Field",
             "properties": {
               "topic": "/SmartDashboard/Field",
@@ -487,10 +487,10 @@
           },
           {
             "title": "Alerts",
-            "x": 0.0,
-            "y": 448.0,
-            "width": 1024.0,
-            "height": 320.0,
+            "x": 1024.0,
+            "y": 0.0,
+            "width": 512.0,
+            "height": 384.0,
             "type": "Alerts",
             "properties": {
               "topic": "/SmartDashboard/Alerts",
