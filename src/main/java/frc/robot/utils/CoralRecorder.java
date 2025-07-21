@@ -75,6 +75,10 @@ public class CoralRecorder {
       FieldConstants.fieldLength - kLeftLollipop.getX(), kLeftLollipop.getY());
   public static final Translation2d kRightLollipopFlipped = new Translation2d(
       FieldConstants.fieldLength - kRightLollipop.getX(), kRightLollipop.getY());
+  public static final Translation2d kMidLollipop = FieldConstants.StagingPositions.middleIceCream.getTranslation();
+  public static final Translation2d kMidLollipopFlipped = new Translation2d(
+    FieldConstants.fieldLength - kMidLollipop.getX(), kMidLollipop.getY()
+  );
 
   public int currentId = 0;
   public List<CoralInfo> coralInfos = new ArrayList<>();
@@ -94,14 +98,14 @@ public class CoralRecorder {
       if (info.getConfidence() <= 0.0)
         iterator.remove();
       
-      Translation2d loc = info.getTranslation();
-      double lollipopCapture = CoralRecorderParamsNT.lollipopRejectionRadiusMeters.getValue();
-      boolean isNearLollipop = epsilonEqualsNorm(loc, kLeftLollipop, lollipopCapture)
-        || epsilonEqualsNorm(loc, kRightLollipop, lollipopCapture)
-        || epsilonEqualsNorm(loc, kLeftLollipopFlipped, lollipopCapture)
-        || epsilonEqualsNorm(loc, kRightLollipopFlipped, lollipopCapture);
-      if(isNearLollipop)
-        iterator.remove();
+      // Translation2d loc = info.getTranslation();
+      // double lollipopCapture = CoralRecorderParamsNT.lollipopRejectionRadiusMeters.getValue();
+      // boolean isNearLollipop = epsilonEqualsNorm(loc, kLeftLollipop, lollipopCapture)
+      //   || epsilonEqualsNorm(loc, kRightLollipop, lollipopCapture)
+      //   || epsilonEqualsNorm(loc, kLeftLollipopFlipped, lollipopCapture)
+      //   || epsilonEqualsNorm(loc, kRightLollipopFlipped, lollipopCapture);
+      // if(isNearLollipop)
+      //   iterator.remove();
     }
   }
 
@@ -277,6 +281,6 @@ public class CoralRecorder {
     static final double confidenceTimeObservationGain = 7.0; // increase in confidence per second when observed
     static final double confidenceNewObservationProportion = 0.8; // starting confidence for a new observation
     static final double confidenceThreshold = 0.5;
-    static final double lollipopRejectionRadiusMeters = 0.40;
+    static final double lollipopRejectionRadiusMeters = 0.25;
   }
 }

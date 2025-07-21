@@ -51,9 +51,14 @@ public class RobotStateRecorder extends TransformRecorder {
     Logger.recordOutput("RobotStateRecorder/LeftLollipopFlipped", new Pose2d(
       CoralRecorder.kLeftLollipopFlipped, new Rotation2d()
     ));
-    
     Logger.recordOutput("RobotStateRecorder/RightLollipopFlipped", new Pose2d(
       CoralRecorder.kRightLollipopFlipped, new Rotation2d()
+    ));
+    Logger.recordOutput("RobotStateRecorder/MidLollipop", new Pose2d(
+      CoralRecorder.kMidLollipop, new Rotation2d()
+    ));
+    Logger.recordOutput("RobotStateRecorder/RMidLollipopFlipped", new Pose2d(
+      CoralRecorder.kMidLollipopFlipped, new Rotation2d()
     ));
     
   }
