@@ -93,6 +93,15 @@ public class CoralRecorder {
       info.setConfidence(info.getConfidence() - dt * CoralRecorderParamsNT.confidenceTimeDecay.getValue());
       if (info.getConfidence() <= 0.0)
         iterator.remove();
+      
+      Translation2d loc = info.getTranslation();
+      double lollipopCapture = CoralRecorderParamsNT.lollipopRejectionRadiusMeters.getValue();
+      boolean isNearLollipop = epsilonEqualsNorm(loc, kLeftLollipop, lollipopCapture)
+        || epsilonEqualsNorm(loc, kRightLollipop, lollipopCapture)
+        || epsilonEqualsNorm(loc, kLeftLollipopFlipped, lollipopCapture)
+        || epsilonEqualsNorm(loc, kRightLollipopFlipped, lollipopCapture);
+      if(isNearLollipop)
+        iterator.remove();
     }
   }
 
@@ -205,7 +214,6 @@ public class CoralRecorder {
       return Optional.of(mostAligned);
     return Optional.empty();
   }
-
 
   public Optional<CoralInfo> getNearestCoralInSight(Pose2d robotPose, Angle insightAngle) {
     var pRobot = robotPose.getTranslation();
