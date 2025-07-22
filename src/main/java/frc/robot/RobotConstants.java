@@ -630,7 +630,7 @@ public final class RobotConstants {
     @Deprecated
     public static final TunableNumber ALGAE_HOLD_VOLTAGE = new TunableNumber("EEARM/Roller/algaeHoldVoltage", 1.5);
     @Deprecated
-    public static final TunableNumber CORAL_SHOOT_VOLTAGE = new TunableNumber("EEARM/Roller/coralShootVoltage", -12.0);
+    public static final TunableNumber CORAL_SHOOT_VOLTAGE = new TunableNumber("EEARM/Roller/coralShootVoltage", -10.0);
     @Deprecated
     public static final TunableNumber CORAL_SHOOT_VOLTAGE_L1 = new TunableNumber("EEARM/Roller/coralShootVoltageL1", -2.0);
     @Deprecated
